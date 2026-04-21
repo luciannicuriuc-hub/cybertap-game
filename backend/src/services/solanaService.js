@@ -12,8 +12,8 @@ const {
 } = require('@solana/web3.js');
 const { pool } = require('../config/db');
 
-const REVENUE_LAMPORTS_PER_POINT = Number(process.env.SOLANA_REVENUE_LAMPORTS_PER_POINT || 100000);
-const MIN_CLAIM_LAMPORTS = Number(process.env.SOLANA_MIN_CLAIM_LAMPORTS || 10000000);
+const REVENUE_LAMPORTS_PER_POINT = Number(process.env.SOLANA_REVENUE_LAMPORTS_PER_POINT || 10);
+const MIN_CLAIM_LAMPORTS = Number(process.env.SOLANA_MIN_CLAIM_LAMPORTS || 10);
 const RPC_URL = process.env.SOLANA_RPC_URL || 'https://api.devnet.solana.com';
 
 function normalizeSignature(signature) {
