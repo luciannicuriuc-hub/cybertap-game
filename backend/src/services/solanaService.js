@@ -1,5 +1,7 @@
 const crypto = require('crypto');
 const bs58 = require('bs58');
+const bip39 = require('bip39');
+const { derivePath } = require('ed25519-hd-key');
 const nacl = require('tweetnacl');
 const {
     Connection,
@@ -15,12 +17,24 @@ const { pool } = require('../config/db');
 const REVENUE_LAMPORTS_PER_POINT = Number(process.env.SOLANA_REVENUE_LAMPORTS_PER_POINT || 10);
 const MIN_CLAIM_LAMPORTS = Number(process.env.SOLANA_MIN_CLAIM_LAMPORTS || 10);
 const RPC_URL = process.env.SOLANA_RPC_URL || 'https://api.devnet.solana.com';
+const SOLANA_TREASURY_DERIVATION_PATH = process.env.SOLANA_TREASURY_DERIVATION_PATH || "m/44'/501'/0'/0'";
 
 function normalizeSignature(signature) {
     if (Array.isArray(signature)) return Uint8Array.from(signature);
     if (typeof signature === 'string') return Uint8Array.from(bs58.decode(signature));
     if (signature instanceof Uint8Array) return signature;
     return null;
+}
+
+function normalizeMnemonic(mnemonicValue) {
+    const normalizedValue = stripWrappedQuotes(mnemonicValue).replace(/\s+/g, ' ').trim();
+    if (!normalizedValue) return null;
+
+    if (!bip39.validateMnemonic(normalizedValue)) {
+        return null;
+    }
+
+    return normalizedValue;
 }
 
 function stripWrappedQuotes(value) {
@@ -48,6 +62,23 @@ function normalizeSecretKey(secretKeyValue) {
 
     try {
         const normalizedValue = stripWrappedQuotes(secretKeyValue);
+
+        if (normalizedValue.includes(' ')) {
+            const mnemonic = normalizeMnemonic(normalizedValue);
+
+            if (mnemonic) {
+                const seed = bip39.mnemonicToSeedSync(mnemonic);
+                const derived = derivePath(SOLANA_TREASURY_DERIVATION_PATH, seed.toString('hex')).key;
+
+                if (derived.length !== 32) {
+                    throw new Error('Mnemonic derivation produced an invalid seed');
+                }
+
+                return Keypair.fromSeed(derived);
+            }
+
+            throw new Error('Invalid Solana mnemonic phrase');
+        }
 
         if (normalizedValue.startsWith('{')) {
             const parsed = JSON.parse(normalizedValue);
@@ -79,6 +110,10 @@ function normalizeSecretKey(secretKeyValue) {
         return Keypair.fromSecretKey(decoded);
     } catch (error) {
         const normalizedValue = stripWrappedQuotes(secretKeyValue);
+
+        if (normalizedValue.includes(' ')) {
+            throw new Error('Invalid Solana mnemonic phrase. Use the 12 or 24-word recovery phrase from Phantom.');
+        }
 
         if (normalizedValue && /^[1-9A-HJ-NP-Za-km-z]{32,}$/.test(normalizedValue)) {
             let looksLikePublicKey = false;
