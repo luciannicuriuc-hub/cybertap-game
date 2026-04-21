@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { api, backendUrl } from './lib/api';
+import { api } from './lib/api';
 
 const appName = import.meta.env.APP_NAME || import.meta.env.VITE_APP_NAME || 'CyberTap';
 const botName = (import.meta.env.TELEGRAM_BOT_NAME || import.meta.env.VITE_TELEGRAM_BOT_NAME || '').replace(/^@/, '').trim();
 const demoTelegramId = Number(import.meta.env.DEMO_TELEGRAM_ID || import.meta.env.VITE_DEMO_TELEGRAM_ID || 12345);
-const BACKEND_URL = backendUrl;
-
 const UPGRADES_CONFIG = {
   tap: [
     { id: 'multi_tap', name: 'Multi-Tap', description: '+1 point per tap', icon: '🖱️', baseCost: 500, costMult: 1.5, maxLevel: 50, effect: '+1 tap' },
@@ -183,6 +181,9 @@ function App() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [referralLink, setReferralLink] = useState('Loading...');
   const [userRank, setUserRank] = useState('#--');
+  const [backendHealth, setBackendHealth] = useState('checking');
+  const [isBootstrapping, setIsBootstrapping] = useState(true);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
   const [offlineEarnings, setOfflineEarnings] = useState(0);
   const [offlineVisible, setOfflineVisible] = useState(false);
   const [activeTab, setActiveTab] = useState('game');
@@ -253,6 +254,23 @@ function App() {
 
     setTelegramId(demoTelegramId);
     setUsername('@test_user');
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadBackendHealth() {
+      const response = await api.ping();
+      if (cancelled) return;
+
+      setBackendHealth(response.ok ? 'online' : 'offline');
+    }
+
+    loadBackendHealth();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -475,12 +493,14 @@ function App() {
   }
 
   async function loadLeaderboard() {
+    setLeaderboardLoading(true);
     try {
-      const response = await fetch(`${BACKEND_URL}/api/leaderboard`);
-      const data = await response.json();
-      setLeaderboard(Array.isArray(data) ? data : []);
+      const response = await api.getLeaderboard(20);
+      setLeaderboard(response.ok && Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Leaderboard error:', error);
+    } finally {
+      setLeaderboardLoading(false);
     }
   }
 
@@ -520,17 +540,13 @@ function App() {
     }
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/upgrade`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegramId, upgradeId }),
-      });
-
-      const data = await response.json();
-      if (!data.success) {
-        showToast('⚠️', data.error || 'Upgrade failed');
+      const response = await api.upgrade(telegramId, upgradeId);
+      if (!response.ok || !response.data?.success) {
+        showToast('⚠️', response.error || 'Upgrade failed');
         return;
       }
+
+      const data = response.data;
 
       setPoints(Number(data.points) || pointsRef.current);
       pointsRef.current = Number(data.points) || pointsRef.current;
@@ -572,14 +588,10 @@ function App() {
 
   async function claimDailyReward() {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/daily`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegramId }),
-      });
+      const response = await api.daily(telegramId);
+      const data = response.data || {};
 
-      const data = await response.json();
-      if (data.reward || data.points) {
+      if (response.ok && (data.reward || data.points)) {
         setPoints(Number(data.points) || pointsRef.current);
         pointsRef.current = Number(data.points) || pointsRef.current;
         setStreak(Number(data.streak) || streakRef.current);
@@ -598,6 +610,8 @@ function App() {
         const hours = Math.floor(data.time_left / 3600000);
         const minutes = Math.floor((data.time_left % 3600000) / 60000);
         showToast('⏳', `Come back in ${hours}h ${minutes}m`);
+      } else if (!response.ok) {
+        showToast('⚠️', response.error || 'Daily reward failed');
       }
     } catch (error) {
       console.error('Daily reward error:', error);
@@ -661,11 +675,7 @@ function App() {
       setModal({ show: true, icon, title: 'Wheel Result!', text: message });
       saveLocalState();
 
-      fetch(`${BACKEND_URL}/api/wheel_spin`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegramId, reward: selected.label, points: selected.points, special: selected.special }),
-      }).catch(() => {});
+      api.wheelSpin(telegramId, selected.label, selected.points, selected.special).catch(() => {});
     }, 4500);
   }
 
@@ -683,6 +693,8 @@ function App() {
   }
 
   function loadUserDataAndBootstrap() {
+    let cancelled = false;
+
     const loadLocalState = () => {
       const saved = window.localStorage.getItem('cybertap_v2');
       if (!saved) return;
@@ -732,8 +744,8 @@ function App() {
 
     const loadBotInfo = async () => {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/botinfo`);
-        const data = await response.json();
+        const response = await api.getBotInfo();
+        const data = response.ok ? response.data : null;
         setReferralLink(buildReferralLink(data?.username || botName, telegramId));
       } catch (error) {
         setReferralLink(buildReferralLink(botName, telegramId));
@@ -743,9 +755,9 @@ function App() {
 
     const loadUserData = async () => {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/user/${telegramId}`);
-        if (!response.ok) throw new Error('Server error');
-        const data = await response.json();
+        const response = await api.getUser(telegramId);
+        if (!response.ok) throw new Error(response.error || 'Server error');
+        const data = response.data;
 
         const nextPoints = Number(data.points) || 0;
         const nextTotalPoints = Number(data.total_points) || nextPoints;
@@ -795,11 +807,7 @@ function App() {
           setOfflineVisible(true);
           offlineCollectTimerRef.current = window.setTimeout(async () => {
             try {
-              await fetch(`${BACKEND_URL}/api/collect`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ telegramId }),
-              });
+              await api.collect(telegramId);
             } catch (error) {
               console.error('Collect error:', error);
             }
@@ -831,13 +839,9 @@ function App() {
       pendingTapsRef.current = 0;
 
       try {
-        const response = await fetch(`${BACKEND_URL}/api/tap`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telegramId, taps: tapsToSend, tapValue: tapValueRef.current }),
-        });
-        const data = await response.json();
-        if (data.points !== undefined) {
+        const response = await api.tap(telegramId, tapsToSend, tapValueRef.current);
+        const data = response.data || {};
+        if (response.ok && data.points !== undefined) {
           const nextPoints = Math.max(pointsRef.current, Number(data.points) || 0);
           pointsRef.current = nextPoints;
           setPoints(nextPoints);
@@ -848,25 +852,32 @@ function App() {
       }
     };
 
-    loadLocalState();
-    loadUserData();
-    loadBotInfo();
+    setIsBootstrapping(true);
 
-    passiveTimerRef.current = window.setInterval(() => {
-      if (pointsPerHourRef.current > 0) {
-        updateRefState(setPoints, pointsRef, (value) => value + pointsPerHourRef.current / 3600);
-        updateRefState(setTotalPoints, totalPointsRef, (value) => value + pointsPerHourRef.current / 3600);
-      }
+    (async () => {
+      loadLocalState();
+      await Promise.allSettled([loadUserData(), loadBotInfo()]);
 
-      if (energyRef.current < maxEnergyRef.current) {
-        updateRefState(setEnergy, energyRef, (value) => Math.min(maxEnergyRef.current, value + energyRegenRef.current));
-      }
-    }, 1000);
+      if (cancelled) return;
 
-    tapSyncTimerRef.current = window.setInterval(sendPendingTaps, 2000);
-    saveTimerRef.current = window.setInterval(saveLocalState, 10000);
+      passiveTimerRef.current = window.setInterval(() => {
+        if (pointsPerHourRef.current > 0) {
+          updateRefState(setPoints, pointsRef, (value) => value + pointsPerHourRef.current / 3600);
+          updateRefState(setTotalPoints, totalPointsRef, (value) => value + pointsPerHourRef.current / 3600);
+        }
+
+        if (energyRef.current < maxEnergyRef.current) {
+          updateRefState(setEnergy, energyRef, (value) => Math.min(maxEnergyRef.current, value + energyRegenRef.current));
+        }
+      }, 1000);
+
+      tapSyncTimerRef.current = window.setInterval(sendPendingTaps, 2000);
+      saveTimerRef.current = window.setInterval(saveLocalState, 10000);
+      setIsBootstrapping(false);
+    })();
 
     return () => {
+      cancelled = true;
       if (passiveTimerRef.current) clearInterval(passiveTimerRef.current);
       if (tapSyncTimerRef.current) clearInterval(tapSyncTimerRef.current);
       if (saveTimerRef.current) clearInterval(saveTimerRef.current);
@@ -895,8 +906,8 @@ function App() {
   const currentMissions = currentMissionType === 'daily' ? DAILY_MISSIONS : WEEKLY_MISSIONS;
   const userRankLeague = getLeague(totalPoints);
   const userRankPoints = `${formatNumber(points)} pts`;
-  const claimDailyButtonLabel = dailyClaimed ? 'Claimed!' : 'Claim Reward';
-  const spinButtonLabel = wheelSpinning ? 'Spinning...' : wheelSpunToday ? 'Spun Today!' : 'Spin the Wheel';
+  const claimDailyButtonLabel = isBootstrapping ? 'Loading...' : dailyClaimed ? 'Claimed!' : 'Claim Reward';
+  const spinButtonLabel = isBootstrapping ? 'Loading...' : wheelSpinning ? 'Spinning...' : wheelSpunToday ? 'Spun Today!' : 'Spin the Wheel';
 
   return (
     <div className="app">
@@ -920,10 +931,19 @@ function App() {
         <div className="header-left">
           <span className="username" id="username">{username}</span>
           <span className="version">CyberTap v2.0</span>
+          <span className={`version ${backendHealth === 'online' ? 'online' : backendHealth === 'offline' ? 'offline' : ''}`}>
+            API {backendHealth === 'online' ? 'Online' : backendHealth === 'offline' ? 'Offline' : 'Checking'}
+          </span>
         </div>
         <div className="league-badge" id="league-badge">
-          <span className="league-icon" id="league-icon">{currentLeague.icon}</span>
-          <span className="league-name" id="league-name">{currentLeague.name}</span>
+          {isBootstrapping ? (
+            <span className="skeleton skeleton-pill skeleton-league" aria-label="Loading league" />
+          ) : (
+            <>
+              <span className="league-icon" id="league-icon">{currentLeague.icon}</span>
+              <span className="league-name" id="league-name">{currentLeague.name}</span>
+            </>
+          )}
         </div>
       </header>
 
@@ -936,28 +956,38 @@ function App() {
       <section id="section-game" className={`section ${activeTab === 'game' ? 'active' : ''}`}>
         <div className="main-container">
           <div className="points-section">
-            <div className="points-number" id="points-display">{formatNumber(points)}</div>
+            <div className="points-number" id="points-display">
+              {isBootstrapping ? <span className="skeleton skeleton-number" aria-label="Loading points" /> : formatNumber(points)}
+            </div>
             <div className="points-label">CYBER POINTS</div>
           </div>
 
           <div className="stats-row">
             <div className="stat-item">
               <span className="icon">⚡</span>
-              <span className="value" id="per-hour-display">{formatNumber(pointsPerHour)}</span>
+              <span className="value" id="per-hour-display">
+                {isBootstrapping ? <span className="skeleton skeleton-line skeleton-line-sm" aria-label="Loading income" /> : formatNumber(pointsPerHour)}
+              </span>
               <span className="label">/ hour</span>
             </div>
             <div className="stat-item">
               <span className="icon">🖱️</span>
-              <span className="value" id="tap-power-display">+{tapValue}</span>
+              <span className="value" id="tap-power-display">
+                {isBootstrapping ? <span className="skeleton skeleton-line skeleton-line-sm" aria-label="Loading tap power" /> : `+${tapValue}`}
+              </span>
               <span className="label">/ tap</span>
             </div>
           </div>
 
           <div className="energy-section">
             <div className="energy-bar-bg">
-              <div className="energy-bar-fill" id="energy-bar" style={{ width: `${Math.max(0, Math.min(100, (energy / maxEnergy) * 100))}%` }} />
+              {isBootstrapping ? (
+                <div className="energy-bar-fill energy-bar-skeleton" aria-label="Loading energy" />
+              ) : (
+                <div className="energy-bar-fill" id="energy-bar" style={{ width: `${Math.max(0, Math.min(100, (energy / maxEnergy) * 100))}%` }} />
+              )}
               <span className="energy-text">
-                <span id="energy-current">{Math.floor(energy)}</span> / <span id="energy-max">{maxEnergy}</span> ⚡
+                {isBootstrapping ? <span className="skeleton skeleton-line skeleton-line-lg" aria-label="Loading energy values" /> : <><span id="energy-current">{Math.floor(energy)}</span> / <span id="energy-max">{maxEnergy}</span> ⚡</>}
               </span>
             </div>
           </div>
@@ -977,14 +1007,24 @@ function App() {
                 className={`tap-button ${tapCritical ? 'critical' : ''}`}
                 id="tap-button"
                 type="button"
+                disabled={isBootstrapping}
                 onPointerDown={startTapping}
                 onPointerUp={stopTapping}
                 onPointerLeave={stopTapping}
                 onPointerCancel={stopTapping}
                 onContextMenu={(event) => event.preventDefault()}
               >
-                <span className="tap-icon">💥</span>
-                <span className="tap-value" id="tap-value-display">+{tapValue}</span>
+                {isBootstrapping ? (
+                  <>
+                    <span className="tap-icon tap-icon-loading">⏳</span>
+                    <span className="tap-value tap-value-loading">SYNC</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="tap-icon">💥</span>
+                    <span className="tap-value" id="tap-value-display">+{tapValue}</span>
+                  </>
+                )}
               </button>
             </div>
 
@@ -1018,7 +1058,19 @@ function App() {
           </div>
 
           <div id="upgrades-list">
-            {currentUpgrades.map((upgrade) => {
+            {isBootstrapping
+              ? Array.from({ length: 4 }, (_, index) => index).map((index) => (
+                <article key={`shop-skeleton-${index}`} className="upgrade-card skeleton-card">
+                  <div className="upgrade-icon-box skeleton-circle" />
+                  <div className="upgrade-info">
+                    <div className="skeleton skeleton-line skeleton-line-md" />
+                    <div className="skeleton skeleton-line skeleton-line-sm" />
+                    <div className="skeleton skeleton-line skeleton-line-xs" />
+                  </div>
+                  <div className="upgrade-buy-btn skeleton-button" />
+                </article>
+              ))
+              : currentUpgrades.map((upgrade) => {
               const level = Number(upgradeLevels[upgrade.id]) || 0;
               const cost = Math.floor(upgrade.baseCost * Math.pow(upgrade.costMult, level));
               const isMaxed = level >= upgrade.maxLevel;
@@ -1047,7 +1099,7 @@ function App() {
                   </button>
                 </article>
               );
-            })}
+              })}
           </div>
         </div>
       </section>
@@ -1068,7 +1120,23 @@ function App() {
           </div>
 
           <div id="leaderboard-list">
-            {leaderboard.slice(0, 20).map((player, index) => {
+            {(isBootstrapping || (leaderboardLoading && leaderboard.length === 0)
+              ? Array.from({ length: 5 }, (_, index) => ({ id: `leaderboard-skeleton-${index}`, index }))
+              : leaderboard.slice(0, 20).map((player, index) => ({ ...player, index })))
+              .map((player, index) => {
+              if (isBootstrapping || (leaderboardLoading && leaderboard.length === 0)) {
+                return (
+                  <article key={`leaderboard-skeleton-${index}`} className="leaderboard-item skeleton-card">
+                    <span className="lb-rank"><span className="skeleton skeleton-circle skeleton-mini" /></span>
+                    <div className="lb-info">
+                      <div className="skeleton skeleton-line skeleton-line-md" />
+                      <div className="skeleton skeleton-line skeleton-line-sm" />
+                    </div>
+                    <span className="lb-points"><span className="skeleton skeleton-line skeleton-line-sm" /></span>
+                  </article>
+                );
+              }
+
               const league = getLeague(Number(player.total_points || player.points) || 0);
               const rankClass = index < 3 ? `top-${index + 1}` : '';
               const rankLabel = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}`;
@@ -1087,12 +1155,25 @@ function App() {
           </div>
 
           <div className="user-rank-card" id="user-rank-card">
-            <span className="lb-rank" id="user-rank">{userRank}</span>
-            <div className="lb-info">
-              <div className="lb-name" id="user-rank-name">{username}</div>
-              <div className="lb-league" id="user-rank-league">{userRankLeague.icon} {userRankLeague.name}</div>
-            </div>
-            <span className="lb-points" id="user-rank-points">{userRankPoints}</span>
+            {isBootstrapping ? (
+              <>
+                <span className="lb-rank"><span className="skeleton skeleton-circle skeleton-mini" /></span>
+                <div className="lb-info">
+                  <div className="skeleton skeleton-line skeleton-line-md" />
+                  <div className="skeleton skeleton-line skeleton-line-sm" />
+                </div>
+                <span className="lb-points"><span className="skeleton skeleton-line skeleton-line-sm" /></span>
+              </>
+            ) : (
+              <>
+                <span className="lb-rank" id="user-rank">{userRank}</span>
+                <div className="lb-info">
+                  <div className="lb-name" id="user-rank-name">{username}</div>
+                  <div className="lb-league" id="user-rank-league">{userRankLeague.icon} {userRankLeague.name}</div>
+                </div>
+                <span className="lb-points" id="user-rank-points">{userRankPoints}</span>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -1107,11 +1188,11 @@ function App() {
 
             <div className="streak-display">
               <span className="streak-label">Current Streak:</span>
-              <span className="streak-value" id="streak-count">{streak}</span>
+              <span className="streak-value" id="streak-count">{isBootstrapping ? <span className="skeleton skeleton-line skeleton-line-sm" aria-label="Loading streak" /> : streak}</span>
               <span className="streak-icon">⚡</span>
             </div>
 
-            <button className="claim-btn" id="claim-daily-btn" type="button" disabled={dailyClaimed} onClick={claimDailyReward}>
+            <button className="claim-btn" id="claim-daily-btn" type="button" disabled={isBootstrapping || dailyClaimed} onClick={claimDailyReward}>
               <span>🎁</span>
               <span>{claimDailyButtonLabel}</span>
             </button>
@@ -1129,7 +1210,7 @@ function App() {
               <div className="wheel-center">SPIN</div>
             </div>
 
-            <button className="spin-btn" id="spin-btn" type="button" disabled={wheelSpinning || wheelSpunToday} onClick={spinWheel}>
+            <button className="spin-btn" id="spin-btn" type="button" disabled={isBootstrapping || wheelSpinning || wheelSpunToday} onClick={spinWheel}>
               <span>🎡</span>
               <span>{spinButtonLabel}</span>
             </button>
@@ -1147,7 +1228,23 @@ function App() {
             </div>
 
             <div id="missions-list">
-              {currentMissions.map((mission) => {
+              {isBootstrapping
+                ? Array.from({ length: 4 }, (_, index) => index).map((index) => (
+                  <article key={`mission-skeleton-${index}`} className="mission-card skeleton-card">
+                    <div className="mission-icon skeleton-circle" />
+                    <div className="mission-info">
+                      <div className="skeleton skeleton-line skeleton-line-md" />
+                      <div className="skeleton skeleton-line skeleton-line-sm" />
+                      <div className="mission-progress"><div className="mission-progress-fill skeleton-progress" /></div>
+                      <div className="skeleton skeleton-line skeleton-line-xs" />
+                    </div>
+                    <div className="mission-reward">
+                      <div className="skeleton skeleton-line skeleton-line-sm" />
+                      <div className="skeleton skeleton-line skeleton-line-xs" />
+                    </div>
+                  </article>
+                ))
+                : currentMissions.map((mission) => {
                 const progress = getMissionProgress(mission, { todayTaps, todayUpgrades, todayCollections, wheelSpunToday, streak, referralCount });
                 const completed = progress >= mission.target;
                 const progressPercent = Math.min((progress / mission.target) * 100, 100);
@@ -1171,7 +1268,7 @@ function App() {
                     </div>
                   </article>
                 );
-              })}
+                })}
             </div>
           </div>
 
@@ -1183,7 +1280,7 @@ function App() {
 
             <div className="referral-stats">
               <div className="referral-stat">
-                <div className="referral-stat-value" id="referral-count">{referralCount}</div>
+                <div className="referral-stat-value" id="referral-count">{isBootstrapping ? <span className="skeleton skeleton-line skeleton-line-sm" aria-label="Loading referrals" /> : referralCount}</div>
                 <div className="referral-stat-label">Friends Invited</div>
               </div>
               <div className="referral-stat">
@@ -1198,8 +1295,8 @@ function App() {
 
             <div className="referral-link-box">
               <div className="referral-link-label">Your Referral Link:</div>
-              <div className="referral-link" id="referral-link">{referralLink}</div>
-              <button className="copy-btn" id="copy-btn" type="button" onClick={copyReferralLink}>
+              <div className="referral-link" id="referral-link">{isBootstrapping ? <span className="skeleton skeleton-line skeleton-line-lg" aria-label="Loading referral link" /> : referralLink}</div>
+              <button className="copy-btn" id="copy-btn" type="button" disabled={isBootstrapping} onClick={copyReferralLink}>
                 <span>🔗</span>
                 <span>{copyLabel}</span>
               </button>

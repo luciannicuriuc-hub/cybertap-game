@@ -129,6 +129,14 @@ body::before {
   color: var(--text-dim);
 }
 
+.version.online {
+  color: var(--primary);
+}
+
+.version.offline {
+  color: var(--danger);
+}
+
 .league-badge {
   display: flex;
   align-items: center;
@@ -238,6 +246,109 @@ body::before {
   line-height: 1;
   text-shadow: 0 0 20px rgba(0, 255, 136, 0.8), 0 0 40px rgba(0, 255, 136, 0.4), 0 0 60px rgba(0, 255, 136, 0.2);
   letter-spacing: -0.04em;
+}
+
+.skeleton {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, rgba(0, 255, 136, 0.12), rgba(0, 212, 255, 0.26), rgba(0, 255, 136, 0.12));
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.35s ease-in-out infinite;
+}
+
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-line {
+  border-radius: 999px;
+}
+
+.skeleton-line-xs {
+  width: 42px;
+  height: 8px;
+}
+
+.skeleton-line-sm {
+  width: 72px;
+  height: 10px;
+}
+
+.skeleton-line-md {
+  width: 116px;
+  height: 12px;
+}
+
+.skeleton-line-lg {
+  width: 140px;
+  height: 12px;
+}
+
+.skeleton-number {
+  width: 180px;
+  height: 56px;
+  border-radius: 20px;
+}
+
+.skeleton-pill {
+  width: 108px;
+  height: 28px;
+  border-radius: 999px;
+}
+
+.skeleton-circle {
+  border-radius: 50%;
+}
+
+.skeleton-mini {
+  width: 24px;
+  height: 24px;
+}
+
+.skeleton-button {
+  width: 84px;
+  height: 50px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, rgba(0, 255, 136, 0.1), rgba(0, 212, 255, 0.18), rgba(0, 255, 136, 0.1));
+}
+
+.skeleton-card {
+  pointer-events: none;
+}
+
+.energy-bar-skeleton {
+  width: 100% !important;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(0, 102, 255, 0.16), rgba(0, 255, 255, 0.34), rgba(0, 102, 255, 0.16));
+}
+
+.skeleton-progress {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.tap-button:disabled {
+  cursor: wait;
+  opacity: 0.88;
+  box-shadow: 0 0 18px rgba(0, 255, 136, 0.12), inset 0 0 30px rgba(0, 255, 136, 0.08);
+}
+
+.tap-icon-loading,
+.tap-value-loading {
+  color: var(--accent);
+}
+
+.tap-value-loading {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.skeleton-league {
+  display: inline-block;
 }
 
 .points-label {
@@ -921,6 +1032,13 @@ body::before {
   background: #333;
   color: #666;
   cursor: not-allowed;
+}
+
+.copy-btn:disabled {
+  background: #2b2b2b;
+  color: #777;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 .mission-card {

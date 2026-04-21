@@ -11,7 +11,22 @@ async function request(path, options = {}) {
     });
 
     if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`);
+      let errorMessage = `Request failed with status ${response.status}`;
+      let errorDetails = null;
+
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData?.error || errorMessage;
+        errorDetails = errorData || null;
+      } catch (parseError) {
+        void parseError;
+      }
+
+      return {
+        ok: false,
+        error: errorMessage,
+        details: errorDetails,
+      };
     }
 
     const data = await response.json();
@@ -25,6 +40,12 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+  ping() {
+    return request('/');
+  },
+  getBotInfo() {
+    return request('/api/botinfo');
+  },
   getUser(telegramId) {
     return request(`/api/user/${telegramId}`);
   },
@@ -34,8 +55,35 @@ export const api = {
   getLeaderboard(limit = 10) {
     return request(`/api/leaderboard?limit=${limit}`);
   },
-  ping() {
-    return request('/');
+  tap(telegramId, taps, tapValue) {
+    return request('/api/tap', {
+      method: 'POST',
+      body: JSON.stringify({ telegramId, taps, tapValue }),
+    });
+  },
+  collect(telegramId) {
+    return request('/api/collect', {
+      method: 'POST',
+      body: JSON.stringify({ telegramId }),
+    });
+  },
+  upgrade(telegramId, upgradeId) {
+    return request('/api/upgrade', {
+      method: 'POST',
+      body: JSON.stringify({ telegramId, upgradeId }),
+    });
+  },
+  daily(telegramId) {
+    return request('/api/daily', {
+      method: 'POST',
+      body: JSON.stringify({ telegramId }),
+    });
+  },
+  wheelSpin(telegramId, reward, points, special) {
+    return request('/api/wheel_spin', {
+      method: 'POST',
+      body: JSON.stringify({ telegramId, reward, points, special }),
+    });
   },
 };
 
