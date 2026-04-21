@@ -84,7 +84,7 @@ async function registerBotHandlers(bot) {
                 parse_mode: 'Markdown',
                 reply_markup: {
                     inline_keyboard: [
-                        [{ text: '🎮 Play CyberTap', web_app: { url: process.env.WEBAPP_URL } }],
+                        [{ text: '🎮 Play CyberTap', web_app: { url: process.env.WEBAPP_URL || 'https://industrious-integrity-production-5d74.up.railway.app' } }],
                         [{ text: '👥 Invite Friends', callback_data: 'referral' }],
                         [
                             { text: '📊 My Stats', callback_data: 'stats' },

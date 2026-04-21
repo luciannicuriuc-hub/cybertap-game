@@ -1,6 +1,6 @@
 # CyberTap Game Monorepo
 
-Monorepo-ul este împărțit clar în două aplicații:
+Monorepo-ul este împărțit clar în două aplicații:DASJDaDAS
 
 - `backend/` - server Node.js cu Express, PostgreSQL și Telegraf
 - `frontend/` - aplicația React + Vite + Tailwind pentru WebApp
