@@ -23,18 +23,60 @@ function normalizeSignature(signature) {
     return null;
 }
 
+function stripWrappedQuotes(value) {
+    const trimmed = String(value || '').trim();
+    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+        return trimmed.slice(1, -1).trim();
+    }
+
+    return trimmed;
+}
+
 function normalizeSecretKey(secretKeyValue) {
     if (!secretKeyValue) return null;
 
     try {
-        if (secretKeyValue.trim().startsWith('[')) {
-            const parsed = JSON.parse(secretKeyValue);
+        const normalizedValue = stripWrappedQuotes(secretKeyValue);
+
+        if (normalizedValue.startsWith('{')) {
+            const parsed = JSON.parse(normalizedValue);
+            const candidate = Array.isArray(parsed)
+                ? parsed
+                : Array.isArray(parsed?.secretKey)
+                    ? parsed.secretKey
+                    : null;
+
+            if (candidate) {
+                return Keypair.fromSecretKey(Uint8Array.from(candidate));
+            }
+        }
+
+        if (normalizedValue.startsWith('[')) {
+            const parsed = JSON.parse(normalizedValue);
             return Keypair.fromSecretKey(Uint8Array.from(parsed));
         }
 
-        return Keypair.fromSecretKey(bs58.decode(secretKeyValue.trim()));
+        const decoded = bs58.decode(normalizedValue);
+        return Keypair.fromSecretKey(decoded);
     } catch (error) {
-        throw new Error('Invalid SOLANA_TREASURY_SECRET_KEY format');
+        const normalizedValue = stripWrappedQuotes(secretKeyValue);
+
+        if (normalizedValue && /^[1-9A-HJ-NP-Za-km-z]{32,}$/.test(normalizedValue)) {
+            let looksLikePublicKey = false;
+
+            try {
+                new PublicKey(normalizedValue);
+                looksLikePublicKey = true;
+            } catch (publicKeyError) {
+                // Not a valid public key either, fall through to the generic error.
+            }
+
+            if (looksLikePublicKey) {
+                throw new Error('SOLANA_TREASURY_SECRET_KEY must be a secret key/private key, not a public wallet address');
+            }
+        }
+
+        throw new Error('Invalid SOLANA_TREASURY_SECRET_KEY format. Use the wallet secret key export as JSON array or base58 secret key, not the public address.');
     }
 }
 
