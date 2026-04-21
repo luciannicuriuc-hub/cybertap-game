@@ -263,7 +263,17 @@ function App() {
       const response = await api.ping();
       if (cancelled) return;
 
-      setBackendHealth(response.ok ? 'online' : 'offline');
+      if (response.ok && response.data?.status === 'ok') {
+        setBackendHealth('online');
+        return;
+      }
+
+      if (response.ok && response.data?.status === 'degraded') {
+        setBackendHealth('degraded');
+        return;
+      }
+
+      setBackendHealth('offline');
     }
 
     loadBackendHealth();
@@ -931,8 +941,8 @@ function App() {
         <div className="header-left">
           <span className="username" id="username">{username}</span>
           <span className="version">CyberTap v2.0</span>
-          <span className={`version ${backendHealth === 'online' ? 'online' : backendHealth === 'offline' ? 'offline' : ''}`}>
-            API {backendHealth === 'online' ? 'Online' : backendHealth === 'offline' ? 'Offline' : 'Checking'}
+          <span className={`version ${backendHealth === 'online' ? 'online' : backendHealth === 'degraded' ? 'degraded' : backendHealth === 'offline' ? 'offline' : ''}`}>
+            API {backendHealth === 'online' ? 'Online' : backendHealth === 'degraded' ? 'Degraded' : backendHealth === 'offline' ? 'Offline' : 'Checking'}
           </span>
         </div>
         <div className="league-badge" id="league-badge">

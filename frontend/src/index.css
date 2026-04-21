@@ -137,6 +137,10 @@ body::before {
   color: var(--danger);
 }
 
+.version.degraded {
+  color: var(--accent);
+}
+
 .league-badge {
   display: flex;
   align-items: center;

@@ -50,14 +50,18 @@ async function findUserByTelegramId(telegramId) {
 }
 
 async function createUser(telegramId, username, firstName, referrerId = null) {
-    await pool.query(`
+    const { rows } = await pool.query(`
         INSERT INTO users (
             telegram_id, username, first_name,
             referrer_id, last_collect, last_login
         ) VALUES ($1, $2, $3, $4, $5, CURRENT_DATE)
+        ON CONFLICT (telegram_id) DO NOTHING
+        RETURNING *
     `, [telegramId, username, firstName, referrerId, Date.now()]);
 
-    if (referrerId && referrerId !== telegramId) {
+    const createdUser = rows[0] || await findUserByTelegramId(telegramId);
+
+    if (rows[0] && referrerId && referrerId !== telegramId) {
         await pool.query(`
             UPDATE users SET
                 points = points + 500,
@@ -67,7 +71,7 @@ async function createUser(telegramId, username, firstName, referrerId = null) {
         `, [referrerId]);
     }
 
-    return findUserByTelegramId(telegramId);
+    return createdUser;
 }
 
 async function getOrCreateUser(telegramId, username, firstName, referrerId = null) {
@@ -78,11 +82,7 @@ async function getOrCreateUser(telegramId, username, firstName, referrerId = nul
 }
 
 async function getUserProfile(telegramId) {
-    let user = await findUserByTelegramId(telegramId);
-
-    if (!user) {
-        user = await getOrCreateUser(telegramId, null, 'Player');
-    }
+    const user = await getOrCreateUser(telegramId, null, 'Player');
 
     const offlineEarnings = calculateOfflineEarnings(user);
     const upgradesRes = await pool.query(`
@@ -105,6 +105,8 @@ async function getUserProfile(telegramId) {
 }
 
 async function getUserRank(telegramId) {
+    await getOrCreateUser(telegramId, null, 'Player');
+
     const { rows } = await pool.query(`
         SELECT COUNT(*) + 1 as rank
         FROM users

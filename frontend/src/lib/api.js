@@ -41,7 +41,7 @@ async function request(path, options = {}) {
 
 export const api = {
   ping() {
-    return request('/');
+    return request('/api/health');
   },
   getBotInfo() {
     return request('/api/botinfo');

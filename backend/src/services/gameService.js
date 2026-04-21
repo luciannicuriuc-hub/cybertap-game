@@ -2,6 +2,8 @@ const { pool } = require('../config/db');
 const { getOrCreateUser, calculateOfflineEarnings } = require('./userService');
 
 async function applyTap({ telegramId, taps, tapValue }) {
+    await getOrCreateUser(telegramId, null, 'Player');
+
     const validTaps = Math.min(parseInt(taps, 10) || 1, 200);
     const validTapValue = Math.min(parseInt(tapValue, 10) || 1, 1000);
     const totalPoints = validTaps * validTapValue;
@@ -54,6 +56,8 @@ async function collectPassiveIncome(telegramId) {
 }
 
 async function buyUpgrade(telegramId, upgradeId) {
+    await getOrCreateUser(telegramId, null, 'Player');
+
     const userRes = await pool.query(
         'SELECT * FROM users WHERE telegram_id = $1',
         [telegramId]
@@ -175,6 +179,8 @@ async function claimDailyReward(telegramId) {
     const now = Date.now();
     const oneDayMs = 24 * 60 * 60 * 1000;
 
+    await getOrCreateUser(telegramId, null, 'Player');
+
     await pool.query(`
         INSERT INTO daily_rewards (telegram_id, last_claim, streak)
         VALUES ($1, 0, 0)
@@ -237,6 +243,8 @@ async function claimDailyReward(telegramId) {
 }
 
 async function spinWheel({ telegramId, reward, points, special }) {
+    await getOrCreateUser(telegramId, null, 'Player');
+
     const today = new Date().toISOString().split('T')[0];
 
     const { rows } = await pool.query(`

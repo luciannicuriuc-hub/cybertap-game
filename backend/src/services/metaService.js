@@ -1,10 +1,23 @@
 async function getBotInfo(bot) {
-    const botInfo = await bot.telegram.getMe();
-    return {
-        id: botInfo.id,
-        username: botInfo.username,
-        first_name: botInfo.first_name,
-    };
+    try {
+        if (!bot?.telegram?.getMe) {
+            throw new Error('Bot client unavailable');
+        }
+
+        const botInfo = await bot.telegram.getMe();
+        return {
+            id: botInfo.id,
+            username: botInfo.username,
+            first_name: botInfo.first_name,
+        };
+    } catch (error) {
+        return {
+            id: null,
+            username: (process.env.TELEGRAM_BOT_NAME || process.env.BOT_USERNAME || '').replace(/^@/, ''),
+            first_name: process.env.BOT_FIRST_NAME || 'CyberTap Bot',
+            error: error.message,
+        };
+    }
 }
 
 function getHealthStatus() {
