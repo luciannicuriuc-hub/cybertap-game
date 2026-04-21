@@ -94,6 +94,42 @@ async function migrateDatabase() {
     await pool.query(`ALTER TABLE upgrades ADD COLUMN IF NOT EXISTS effect_per_level INTEGER NOT NULL DEFAULT 0`);
     await pool.query(`ALTER TABLE upgrades ADD COLUMN IF NOT EXISTS effect_type TEXT NOT NULL DEFAULT 'passive_income'`);
     await pool.query(`ALTER TABLE upgrades ADD COLUMN IF NOT EXISTS description TEXT NOT NULL DEFAULT ''`);
+    await pool.query(`
+        ALTER TABLE upgrades
+        ALTER COLUMN base_cost TYPE BIGINT
+        USING CASE
+            WHEN base_cost IS NULL THEN 0
+            WHEN base_cost::text ~ '^-?[0-9]+$' THEN base_cost::text::BIGINT
+            ELSE 0
+        END
+    `);
+    await pool.query(`
+        ALTER TABLE upgrades
+        ALTER COLUMN cost_multiplier TYPE NUMERIC
+        USING CASE
+            WHEN cost_multiplier IS NULL THEN 1
+            WHEN cost_multiplier::text ~ '^-?[0-9]+(\.[0-9]+)?$' THEN cost_multiplier::text::NUMERIC
+            ELSE 1
+        END
+    `);
+    await pool.query(`
+        ALTER TABLE upgrades
+        ALTER COLUMN max_level TYPE INTEGER
+        USING CASE
+            WHEN max_level IS NULL THEN 1
+            WHEN max_level::text ~ '^-?[0-9]+$' THEN max_level::text::INTEGER
+            ELSE 1
+        END
+    `);
+    await pool.query(`
+        ALTER TABLE upgrades
+        ALTER COLUMN effect_per_level TYPE INTEGER
+        USING CASE
+            WHEN effect_per_level IS NULL THEN 0
+            WHEN effect_per_level::text ~ '^-?[0-9]+$' THEN effect_per_level::text::INTEGER
+            ELSE 0
+        END
+    `);
 
     await pool.query(`
         CREATE TABLE IF NOT EXISTS user_upgrades (
