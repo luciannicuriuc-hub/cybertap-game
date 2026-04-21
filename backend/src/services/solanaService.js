@@ -101,10 +101,10 @@ function normalizeSecretKey(secretKeyValue) {
 
 function getTreasurySecretKeyValue() {
     const candidates = [
-        process.env.private_key,
-        process.env.PRIVATE_KEY,
-        process.env.SOLANA_PRIVATE_KEY,
         process.env.SOLANA_TREASURY_SECRET_KEY,
+        // process.env.SOLANA_PRIVATE_KEY,
+        // process.env.PRIVATE_KEY,
+        // process.env.private_key,
     ];
 
     for (const candidate of candidates) {

@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ override: true });
 const { pool } = require('./src/config/db');
 const { migrateDatabase } = require('./src/database/migrate');
 

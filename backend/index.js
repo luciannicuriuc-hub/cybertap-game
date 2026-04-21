@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ override: true });
 const { Telegraf } = require('telegraf');
 const { createApp } = require('./src/app');
 const { registerBotHandlers } = require('./src/bot/registerHandlers');
