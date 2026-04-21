@@ -16,7 +16,7 @@ Monorepo-ul este împărțit clar în două aplicații:
 BOT_TOKEN=your_telegram_bot_token
 DATABASE_URL=postgresql://user:password@localhost:5432/cybertap
 PORT=3000
-WEBAPP_URL=http://localhost:5173
+WEBAPP_URL=https://your-frontend-domain.example
 ```
 
 ### Frontend
@@ -24,11 +24,15 @@ WEBAPP_URL=http://localhost:5173
 `frontend/.env`
 
 ```env
-VITE_API_URL=http://localhost:3000
+BACKEND_URL=http://localhost:3000
 VITE_TELEGRAM_BOT_NAME=your_bot_username
 VITE_APP_NAME=CyberTap
 VITE_DEMO_TELEGRAM_ID=123456789
 ```
+
+`WEBAPP_URL` trebuie să fie URL-ul public unde ai publicat frontend-ul construit, nu linkul către repo și nu localhost. Botul deschide exact adresa asta când apeși butonul Play.
+
+Frontend-ul React folosește entrypoint-ul [frontend/src/index.html](frontend/src/index.html) și se construiește cu Vite în `frontend/dist`.
 
 ## Cum rulezi local
 
