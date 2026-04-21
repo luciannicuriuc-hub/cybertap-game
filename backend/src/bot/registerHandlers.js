@@ -93,6 +93,8 @@ async function registerBotHandlers(bot) {
                     ],
                 },
             });
+
+            console.log('🎮 WEBAPP_URL used:', process.env.WEBAPP_URL || 'https://industrious-integrity-production-5d74.up.railway.app');
         } catch (err) {
             console.error('Start command error:', err);
             await ctx.reply('❌ Error. Please try again with /start');
