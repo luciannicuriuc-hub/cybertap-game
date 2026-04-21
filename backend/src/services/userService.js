@@ -1,4 +1,5 @@
 const { pool } = require('../config/db');
+const { accrueRevenueForPoints } = require('./solanaService');
 
 const LEAGUES = [
     { name: 'Bronze', icon: '🥉', min: 0 },
@@ -69,6 +70,8 @@ async function createUser(telegramId, username, firstName, referrerId = null) {
                 referral_count = referral_count + 1
             WHERE telegram_id = $1
         `, [referrerId]);
+
+        await accrueRevenueForPoints(referrerId, 500);
     }
 
     return createdUser;

@@ -27,6 +27,10 @@ async function migrateDatabase(pool) {
             username TEXT,
             first_name TEXT,
             referrer_id BIGINT,
+            wallet_address TEXT,
+            wallet_verified_at BIGINT,
+            wallet_nonce TEXT,
+            wallet_nonce_expires_at BIGINT,
             points BIGINT NOT NULL DEFAULT 0,
             total_points BIGINT NOT NULL DEFAULT 0,
             points_per_hour INTEGER NOT NULL DEFAULT 0,
@@ -39,6 +43,13 @@ async function migrateDatabase(pool) {
             referral_count INTEGER NOT NULL DEFAULT 0,
             streak INTEGER NOT NULL DEFAULT 0,
             last_collect BIGINT NOT NULL DEFAULT 0,
+            revenue_earned_lamports BIGINT NOT NULL DEFAULT 0,
+            revenue_claimed_lamports BIGINT NOT NULL DEFAULT 0,
+            wallet_claim_count INTEGER NOT NULL DEFAULT 0,
+            wallet_last_claim_amount_lamports BIGINT NOT NULL DEFAULT 0,
+            revenue_last_claim_at BIGINT NOT NULL DEFAULT 0,
+            revenue_last_claim_signature TEXT,
+            solana_cluster TEXT NOT NULL DEFAULT 'devnet',
             last_login DATE,
             created_at BIGINT NOT NULL DEFAULT ((EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT)
         )
@@ -47,6 +58,10 @@ async function migrateDatabase(pool) {
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT`);
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name TEXT`);
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS referrer_id BIGINT`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS wallet_address TEXT`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS wallet_verified_at BIGINT`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS wallet_nonce TEXT`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS wallet_nonce_expires_at BIGINT`);
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS points BIGINT NOT NULL DEFAULT 0`);
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS total_points BIGINT NOT NULL DEFAULT 0`);
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS points_per_hour INTEGER NOT NULL DEFAULT 0`);
@@ -59,8 +74,16 @@ async function migrateDatabase(pool) {
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_count INTEGER NOT NULL DEFAULT 0`);
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS streak INTEGER NOT NULL DEFAULT 0`);
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_collect BIGINT NOT NULL DEFAULT 0`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS revenue_earned_lamports BIGINT NOT NULL DEFAULT 0`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS revenue_claimed_lamports BIGINT NOT NULL DEFAULT 0`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS wallet_claim_count INTEGER NOT NULL DEFAULT 0`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS wallet_last_claim_amount_lamports BIGINT NOT NULL DEFAULT 0`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS revenue_last_claim_at BIGINT NOT NULL DEFAULT 0`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS revenue_last_claim_signature TEXT`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS solana_cluster TEXT NOT NULL DEFAULT 'devnet'`);
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login DATE`);
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at BIGINT NOT NULL DEFAULT ((EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT)`);
+    await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS users_wallet_address_unique ON users (wallet_address) WHERE wallet_address IS NOT NULL`);
 
     await pool.query(`
         CREATE TABLE IF NOT EXISTS upgrades (

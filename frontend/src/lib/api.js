@@ -46,6 +46,24 @@ export const api = {
   getBotInfo() {
     return request('/api/botinfo');
   },
+  walletChallenge(telegramId) {
+    return request(`/api/wallet/challenge/${telegramId}`);
+  },
+  walletStatus(telegramId) {
+    return request(`/api/wallet/status/${telegramId}`);
+  },
+  walletVerify(telegramId, walletAddress, signature) {
+    return request('/api/wallet/verify', {
+      method: 'POST',
+      body: JSON.stringify({ telegramId, walletAddress, signature }),
+    });
+  },
+  walletClaim(telegramId) {
+    return request('/api/wallet/claim', {
+      method: 'POST',
+      body: JSON.stringify({ telegramId }),
+    });
+  },
   getUser(telegramId) {
     return request(`/api/user/${telegramId}`);
   },
@@ -103,6 +121,14 @@ export function normalizeUser(source = {}) {
     league: source.league ?? 'Silver',
     rank: Number(source.rank ?? 0),
     referralCount: Number(source.referral_count ?? source.referrerCount ?? 0),
+    walletAddress: source.wallet_address ?? source.walletAddress ?? null,
+    walletVerifiedAt: Number(source.wallet_verified_at ?? source.walletVerifiedAt ?? 0),
+    revenueEarnedLamports: Number(source.revenue_earned_lamports ?? source.revenueEarnedLamports ?? 0),
+    revenueClaimedLamports: Number(source.revenue_claimed_lamports ?? source.revenueClaimedLamports ?? 0),
+    walletClaimCount: Number(source.wallet_claim_count ?? source.walletClaimCount ?? 0),
+    walletLastClaimAmountLamports: Number(source.wallet_last_claim_amount_lamports ?? source.walletLastClaimAmountLamports ?? 0),
+    revenueLastClaimAt: Number(source.revenue_last_claim_at ?? source.revenueLastClaimAt ?? 0),
+    revenueLastClaimSignature: source.revenue_last_claim_signature ?? source.revenueLastClaimSignature ?? null,
   };
 }
 

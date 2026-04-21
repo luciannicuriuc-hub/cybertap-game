@@ -14,5 +14,9 @@ router.post('/daily', requireTelegramId('body'), asyncHandler(apiController.dail
 router.post('/wheel_spin', requireTelegramId('body'), asyncHandler(apiController.wheelSpin));
 router.get('/rank/:telegramId', requireTelegramId('params'), asyncHandler(apiController.rank));
 router.get('/botinfo', asyncHandler(apiController.botInfo));
+router.get('/wallet/challenge/:telegramId', requireTelegramId('params'), asyncHandler(apiController.walletChallenge));
+router.get('/wallet/status/:telegramId', requireTelegramId('params'), asyncHandler(apiController.walletStatus));
+router.post('/wallet/verify', requireTelegramId('body'), asyncHandler(apiController.walletVerify));
+router.post('/wallet/claim', requireTelegramId('body'), asyncHandler(apiController.revenueClaim));
 
 module.exports = router;

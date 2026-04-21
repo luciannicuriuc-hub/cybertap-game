@@ -75,12 +75,25 @@ const WHEEL_SEGMENTS = [
   { label: 'JACKPOT', points: 50000, special: 'jackpot', color: '#ff4500' },
 ];
 
+const LAMPORTS_PER_SOL = 1000000000;
+
 function formatNumber(num) {
   const value = Math.floor(Number(num) || 0);
   if (value >= 1000000000) return `${(value / 1000000000).toFixed(1)}B`;
   if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
   if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
   return `${value}`;
+}
+
+function formatSol(lamports) {
+  const value = Math.max(0, Number(lamports) || 0);
+  return `${(value / LAMPORTS_PER_SOL).toFixed(value >= 1000000 ? 4 : 6)} SOL`;
+}
+
+function shortenAddress(address) {
+  const text = String(address || '');
+  if (text.length <= 12) return text;
+  return `${text.slice(0, 4)}...${text.slice(-4)}`;
 }
 
 function getLeague(points) {
@@ -199,6 +212,15 @@ function App() {
   const [boostMultiplier, setBoostMultiplier] = useState(1);
   const [boostExpires, setBoostExpires] = useState(null);
   const [copyLabel, setCopyLabel] = useState('Copy Link');
+  const [walletAddress, setWalletAddress] = useState('');
+  const [walletVerifiedAt, setWalletVerifiedAt] = useState(0);
+  const [walletLinking, setWalletLinking] = useState(false);
+  const [walletClaiming, setWalletClaiming] = useState(false);
+  const [revenueEarnedLamports, setRevenueEarnedLamports] = useState(0);
+  const [revenueClaimedLamports, setRevenueClaimedLamports] = useState(0);
+  const [walletClaimCount, setWalletClaimCount] = useState(0);
+  const [walletLastClaimAmountLamports, setWalletLastClaimAmountLamports] = useState(0);
+  const [revenueLastClaimSignature, setRevenueLastClaimSignature] = useState('');
 
   const canvasRef = useRef(null);
   const animationFrameRef = useRef(0);
@@ -235,6 +257,10 @@ function App() {
   const boostActiveRef = useRef(false);
   const boostMultiplierRef = useRef(1);
   const boostExpiresRef = useRef(null);
+
+  const walletClaimableLamports = Math.max(0, revenueEarnedLamports - revenueClaimedLamports);
+  const walletLinked = Boolean(walletAddress && walletVerifiedAt);
+  const walletStatusLabel = walletLinked ? 'Linked' : walletAddress ? 'Connected' : 'Not connected';
 
   useEffect(() => {
     document.title = appName;
@@ -702,6 +728,98 @@ function App() {
     }
   }
 
+  async function connectSolanaWallet() {
+    const provider = window.solana;
+    if (!provider?.isPhantom && !provider?.isSolflare) {
+      showToast('⚠️', 'No Solana wallet detected. Install Phantom or another wallet.');
+      return null;
+    }
+
+    const response = await provider.connect();
+    const address = response?.publicKey?.toString?.() || provider.publicKey?.toString?.();
+    if (address) setWalletAddress(address);
+    return address;
+  }
+
+  async function linkSolanaWallet() {
+    if (!telegramId) return;
+
+    const provider = window.solana;
+    if (!provider?.signMessage) {
+      showToast('⚠️', 'Your wallet does not support message signing.');
+      return;
+    }
+
+    setWalletLinking(true);
+    try {
+      const address = await connectSolanaWallet();
+      if (!address) return;
+
+      const challengeResponse = await api.walletChallenge(telegramId);
+      if (!challengeResponse.ok) {
+        showToast('⚠️', challengeResponse.error || 'Could not create wallet challenge');
+        return;
+      }
+
+      const message = challengeResponse.data?.message;
+      if (!message) {
+        showToast('⚠️', 'Challenge message is missing');
+        return;
+      }
+
+      const encodedMessage = new TextEncoder().encode(message);
+      const signed = await provider.signMessage(encodedMessage, 'utf8');
+      const signature = Array.from(signed.signature || signed);
+
+      const verifyResponse = await api.walletVerify(telegramId, address, signature);
+      if (!verifyResponse.ok) {
+        showToast('⚠️', verifyResponse.error || 'Wallet verification failed');
+        return;
+      }
+
+      const verifiedData = verifyResponse.data || {};
+      setWalletAddress(verifiedData.wallet_address || address);
+      setWalletVerifiedAt(Number(verifiedData.wallet_verified_at) || Date.now());
+      setRevenueEarnedLamports(Number(verifiedData.revenue_earned_lamports) || revenueEarnedLamports);
+      setRevenueClaimedLamports(Number(verifiedData.revenue_claimed_lamports) || revenueClaimedLamports);
+      setWalletClaimCount(Number(verifiedData.wallet_claim_count) || 0);
+      setWalletLastClaimAmountLamports(Number(verifiedData.wallet_last_claim_amount_lamports) || 0);
+      setRevenueLastClaimSignature(verifiedData.revenue_last_claim_signature || '');
+      showToast('✅', 'Wallet linked to Telegram account');
+    } catch (error) {
+      console.error('Wallet link error:', error);
+      showToast('⚠️', 'Wallet linking failed');
+    } finally {
+      setWalletLinking(false);
+    }
+  }
+
+  async function claimOnchainRevenue() {
+    if (!telegramId) return;
+
+    setWalletClaiming(true);
+    try {
+      const response = await api.walletClaim(telegramId);
+      if (!response.ok) {
+        showToast('⚠️', response.error || 'Claim failed');
+        return;
+      }
+
+      const data = response.data || {};
+      setRevenueEarnedLamports(Number(data.revenue_earned_lamports) || revenueEarnedLamports);
+      setRevenueClaimedLamports(Number(data.revenue_claimed_lamports) || revenueClaimedLamports);
+      setWalletClaimCount(Number(data.wallet_claim_count) || walletClaimCount);
+      setWalletLastClaimAmountLamports(Number(data.wallet_last_claim_amount_lamports) || walletLastClaimAmountLamports);
+      setRevenueLastClaimSignature(data.revenue_last_claim_signature || data.signature || '');
+      showToast('✅', `Claimed ${formatSol(data.claimed_lamports || 0)}`);
+    } catch (error) {
+      console.error('Revenue claim error:', error);
+      showToast('⚠️', 'Revenue claim failed');
+    } finally {
+      setWalletClaiming(false);
+    }
+  }
+
   function loadUserDataAndBootstrap() {
     let cancelled = false;
 
@@ -778,6 +896,13 @@ function App() {
         const nextCriticalChance = Number(data.critical_chance) || 0;
         const nextMaxEnergy = Number(data.max_energy) || 1000;
         const nextEnergyRegen = Number(data.energy_regen) || 1;
+        const nextWalletAddress = data.wallet_address || '';
+        const nextWalletVerifiedAt = Number(data.wallet_verified_at) || 0;
+        const nextRevenueEarnedLamports = Number(data.revenue_earned_lamports) || 0;
+        const nextRevenueClaimedLamports = Number(data.revenue_claimed_lamports) || 0;
+        const nextWalletClaimCount = Number(data.wallet_claim_count) || 0;
+        const nextWalletLastClaimAmountLamports = Number(data.wallet_last_claim_amount_lamports) || 0;
+        const nextRevenueLastClaimSignature = data.revenue_last_claim_signature || '';
         const nextUpgrades = {};
 
         if (Array.isArray(data.upgrades)) {
@@ -795,6 +920,13 @@ function App() {
         setCriticalChance(nextCriticalChance);
         setMaxEnergy(nextMaxEnergy);
         setEnergyRegen(nextEnergyRegen);
+        setWalletAddress(nextWalletAddress);
+        setWalletVerifiedAt(nextWalletVerifiedAt);
+        setRevenueEarnedLamports(nextRevenueEarnedLamports);
+        setRevenueClaimedLamports(nextRevenueClaimedLamports);
+        setWalletClaimCount(nextWalletClaimCount);
+        setWalletLastClaimAmountLamports(nextWalletLastClaimAmountLamports);
+        setRevenueLastClaimSignature(nextRevenueLastClaimSignature);
         setUpgradeLevels(nextUpgrades);
 
         pointsRef.current = nextPoints;
@@ -1327,6 +1459,55 @@ function App() {
                   </article>
                 );
               })}
+            </div>
+          </div>
+
+          <div className="daily-card">
+            <div className="daily-card-header">
+              <span className="daily-card-icon">⛓️</span>
+              <span className="daily-card-title">Solana Wallet</span>
+            </div>
+
+            <div className="wallet-panel">
+              <div className={`wallet-status-pill ${walletLinked ? 'linked' : walletAddress ? 'connected' : 'idle'}`}>
+                {walletStatusLabel}
+              </div>
+
+              <div className="wallet-address-box">
+                <div className="wallet-address-label">Wallet Address</div>
+                <div className="wallet-address-value">{walletAddress ? shortenAddress(walletAddress) : 'Not linked yet'}</div>
+              </div>
+
+              <div className="wallet-metrics">
+                <div className="wallet-metric">
+                  <span className="wallet-metric-label">Earned</span>
+                  <span className="wallet-metric-value">{formatSol(revenueEarnedLamports)}</span>
+                </div>
+                <div className="wallet-metric">
+                  <span className="wallet-metric-label">Claimed</span>
+                  <span className="wallet-metric-value">{formatSol(revenueClaimedLamports)}</span>
+                </div>
+                <div className="wallet-metric">
+                  <span className="wallet-metric-label">Claimable</span>
+                  <span className="wallet-metric-value accent">{formatSol(walletClaimableLamports)}</span>
+                </div>
+              </div>
+
+              <div className="wallet-actions">
+                <button className="wallet-btn connect" type="button" disabled={walletLinking || walletClaiming} onClick={connectSolanaWallet}>
+                  {walletAddress ? 'Reconnect' : 'Connect'}
+                </button>
+                <button className="wallet-btn link" type="button" disabled={walletLinking || walletClaiming} onClick={linkSolanaWallet}>
+                  {walletLinked ? 'Relink' : walletAddress ? 'Sign & Link' : 'Connect & Link'}
+                </button>
+                <button className="wallet-btn claim" type="button" disabled={walletLinking || walletClaiming || walletClaimableLamports < 10000000} onClick={claimOnchainRevenue}>
+                  {walletClaiming ? 'Claiming...' : 'Claim Revenue'}
+                </button>
+              </div>
+
+              <div className="wallet-note">100 taps = 0.01 SOL</div>
+              {walletClaimCount > 0 ? <div className="wallet-note">Badge unlocked: on-chain earner</div> : <div className="wallet-note">Connect a wallet, sign the challenge, and unlock on-chain earnings.</div>}
+              {walletLastClaimAmountLamports > 0 ? <div className="wallet-note">Last receipt: {formatSol(walletLastClaimAmountLamports)} · {shortenAddress(revenueLastClaimSignature)}</div> : null}
             </div>
           </div>
         </div>

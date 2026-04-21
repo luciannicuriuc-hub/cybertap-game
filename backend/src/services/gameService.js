@@ -1,5 +1,6 @@
 const { pool } = require('../config/db');
 const { getOrCreateUser, calculateOfflineEarnings } = require('./userService');
+const { accrueRevenueForPoints } = require('./solanaService');
 
 async function applyTap({ telegramId, taps, tapValue }) {
     await getOrCreateUser(telegramId, null, 'Player');
@@ -14,6 +15,8 @@ async function applyTap({ telegramId, taps, tapValue }) {
             total_points = total_points + $1
         WHERE telegram_id = $2
     `, [totalPoints, telegramId]);
+
+    await accrueRevenueForPoints(telegramId, totalPoints);
 
     const { rows } = await pool.query(
         'SELECT points, total_points FROM users WHERE telegram_id = $1',
@@ -42,6 +45,8 @@ async function collectPassiveIncome(telegramId) {
                 last_collect = $2
             WHERE telegram_id = $3
         `, [earnings, Date.now(), telegramId]);
+
+        await accrueRevenueForPoints(telegramId, earnings);
     }
 
     const updated = await pool.query(
@@ -230,6 +235,8 @@ async function claimDailyReward(telegramId) {
         WHERE telegram_id = $3
     `, [reward, newStreak, telegramId]);
 
+    await accrueRevenueForPoints(telegramId, reward);
+
     const updated = await pool.query(
         'SELECT points FROM users WHERE telegram_id = $1',
         [telegramId]
@@ -271,6 +278,8 @@ async function spinWheel({ telegramId, reward, points, special }) {
                 total_points = total_points + $1
             WHERE telegram_id = $2
         `, [points, telegramId]);
+
+        await accrueRevenueForPoints(telegramId, points);
     }
 
     if (special === 'energy_full') {

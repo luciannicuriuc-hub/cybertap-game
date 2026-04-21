@@ -1171,6 +1171,137 @@ body::before {
   gap: 6px;
 }
 
+.wallet-panel {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(0, 255, 136, 0.18);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wallet-status-pill {
+  align-self: flex-start;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(136, 146, 160, 0.14);
+  color: var(--text-dim);
+}
+
+.wallet-status-pill.connected {
+  background: rgba(0, 212, 255, 0.14);
+  color: var(--secondary);
+}
+
+.wallet-status-pill.linked {
+  background: rgba(0, 255, 136, 0.14);
+  color: var(--primary);
+}
+
+.wallet-status-pill.idle {
+  background: rgba(251, 191, 36, 0.12);
+  color: var(--accent);
+}
+
+.wallet-address-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wallet-address-label,
+.wallet-metric-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+}
+
+.wallet-address-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  word-break: break-all;
+}
+
+.wallet-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.wallet-metric {
+  background: rgba(0, 40, 60, 0.5);
+  border: 1px solid rgba(0, 255, 136, 0.14);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wallet-metric-value {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--secondary);
+}
+
+.wallet-metric-value.accent {
+  color: var(--primary);
+}
+
+.wallet-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.wallet-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 12px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+.wallet-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.wallet-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.wallet-btn.connect {
+  background: linear-gradient(135deg, var(--secondary), #0b74ff);
+  color: #001018;
+}
+
+.wallet-btn.link {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #00110a;
+}
+
+.wallet-btn.claim {
+  background: linear-gradient(135deg, var(--accent), #f59e0b);
+  color: #160d00;
+}
+
+.wallet-note {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.45;
+}
+
 .milestones-title {
   font-size: 14px;
   font-weight: 700;

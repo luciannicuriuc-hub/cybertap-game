@@ -10,6 +10,12 @@ const {
     claimDailyReward,
     spinWheel,
 } = require('../services/gameService');
+const {
+    createWalletChallenge,
+    verifyWalletLink,
+    getWalletStatus,
+    claimRevenue,
+} = require('../services/solanaService');
 const { getBotInfo } = require('../services/metaService');
 
 async function getUser(req, res) {
@@ -69,6 +75,26 @@ async function botInfo(req, res) {
     res.json(info);
 }
 
+async function walletChallenge(req, res) {
+    const challenge = await createWalletChallenge(req.telegramId);
+    res.json(challenge);
+}
+
+async function walletVerify(req, res) {
+    const result = await verifyWalletLink(req.telegramId, req.body.walletAddress, req.body.signature);
+    res.json(result);
+}
+
+async function walletStatus(req, res) {
+    const status = await getWalletStatus(req.telegramId);
+    res.json(status);
+}
+
+async function revenueClaim(req, res) {
+    const result = await claimRevenue(req.telegramId);
+    res.json(result);
+}
+
 module.exports = {
     getUser,
     tap,
@@ -79,4 +105,8 @@ module.exports = {
     wheelSpin,
     rank,
     botInfo,
+    walletChallenge,
+    walletVerify,
+    walletStatus,
+    revenueClaim,
 };
