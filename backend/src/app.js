@@ -21,8 +21,8 @@ function createApp(bot) {
 
     app.use('/api', apiRoutes);
 
-    // Serve index.html for SPA routes
-    app.get('*', (req, res) => {
+    // Serve index.html for SPA routes (catch-all)
+    app.use('*', (req, res) => {
         res.sendFile(path.join(__dirname, '../../frontend/index.html'));
     });
 
