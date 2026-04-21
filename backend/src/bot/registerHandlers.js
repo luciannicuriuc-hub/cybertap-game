@@ -12,6 +12,21 @@ function buildReferralLink(username, telegramId) {
     return `https://t.me/${username}?start=${telegramId}`;
 }
 
+function resolveWebAppUrl(value) {
+    const fallbackUrl = 'https://your-frontend-domain.example';
+    const rawValue = String(value || '').trim();
+
+    if (!rawValue) return fallbackUrl;
+
+    try {
+        const normalized = rawValue.includes('://') ? new URL(rawValue) : new URL(`https://${rawValue}`);
+        normalized.protocol = 'https:';
+        return normalized.toString().replace(/\/$/, '');
+    } catch (error) {
+        return fallbackUrl;
+    }
+}
+
 function buildWelcomeMessage({ user, league, rank, referrerId, firstName, isNewUser }) {
     let message = '';
 
@@ -60,7 +75,7 @@ async function registerBotHandlers(bot) {
         try {
             const startParam = ctx.message.text.split(' ')[1];
             const referrerId = startParam ? parseInt(startParam, 10) : null;
-            const webappUrl = process.env.WEBAPP_URL || 'https://your-frontend-domain.example';
+            const webappUrl = resolveWebAppUrl(process.env.WEBAPP_URL);
 
             const user = await getOrCreateUser(
                 ctx.from.id,
@@ -85,7 +100,7 @@ async function registerBotHandlers(bot) {
                 parse_mode: 'Markdown',
                 reply_markup: {
                     inline_keyboard: [
-                            [{ text: '🎮 Play CyberTap', web_app: { url: webappUrl } }],
+                        [{ text: '🎮 Play CyberTap', web_app: { url: webappUrl } }],
                         [{ text: '👥 Invite Friends', callback_data: 'referral' }],
                         [
                             { text: '📊 My Stats', callback_data: 'stats' },
