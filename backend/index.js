@@ -86,6 +86,15 @@ async function migrateDatabase() {
         )
     `);
 
+    await pool.query(`ALTER TABLE upgrades ADD COLUMN IF NOT EXISTS category TEXT`);
+    await pool.query(`ALTER TABLE upgrades ADD COLUMN IF NOT EXISTS icon TEXT`);
+    await pool.query(`ALTER TABLE upgrades ADD COLUMN IF NOT EXISTS base_cost BIGINT NOT NULL DEFAULT 0`);
+    await pool.query(`ALTER TABLE upgrades ADD COLUMN IF NOT EXISTS cost_multiplier NUMERIC NOT NULL DEFAULT 1`);
+    await pool.query(`ALTER TABLE upgrades ADD COLUMN IF NOT EXISTS max_level INTEGER NOT NULL DEFAULT 1`);
+    await pool.query(`ALTER TABLE upgrades ADD COLUMN IF NOT EXISTS effect_per_level INTEGER NOT NULL DEFAULT 0`);
+    await pool.query(`ALTER TABLE upgrades ADD COLUMN IF NOT EXISTS effect_type TEXT NOT NULL DEFAULT 'passive_income'`);
+    await pool.query(`ALTER TABLE upgrades ADD COLUMN IF NOT EXISTS description TEXT NOT NULL DEFAULT ''`);
+
     await pool.query(`
         CREATE TABLE IF NOT EXISTS user_upgrades (
             telegram_id BIGINT NOT NULL,
