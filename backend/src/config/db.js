@@ -4,7 +4,7 @@ function resolveDatabaseUrl() {
     const primaryUrl = process.env.DATABASE_URL || '';
     const publicUrl = process.env.DATABASE_URL_PUBLIC || process.env.DATABASE_PUBLIC_URL || '';
 
-    if (primaryUrl.includes('railway.internal') && publicUrl) {
+    if (publicUrl) {
         return publicUrl;
     }
 
