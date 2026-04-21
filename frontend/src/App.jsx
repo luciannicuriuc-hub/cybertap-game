@@ -698,6 +698,7 @@ function App() {
         message = `You won ${formatNumber(selected.points)} points!`;
         icon = '💰';
         createExplosion(window.innerWidth / 2, window.innerHeight / 2, 40, '#fbbf24');
+          refreshWalletRevenueState();
       } else if (selected.special === 'energy_full') {
         updateRefState(setEnergy, energyRef, () => maxEnergyRef.current);
         message = 'Full Energy Refill!';
@@ -718,6 +719,7 @@ function App() {
         message = 'JACKPOT! You won 50,000 points!';
         icon = '🎉';
         createExplosion(window.innerWidth / 2, window.innerHeight / 2, 100, '#ffd700');
+          refreshWalletRevenueState();
       }
 
       setModal({ show: true, icon, title: 'Wheel Result!', text: message });
@@ -774,6 +776,24 @@ function App() {
     setWalletManualSignature('');
     showToast('✅', 'Wallet linked to Telegram account');
     return true;
+  }
+
+  async function refreshWalletRevenueState() {
+    if (!telegramId || (!walletAddress && !walletVerifiedAt)) return;
+
+    try {
+      const response = await api.walletStatus(telegramId);
+      if (!response.ok || !response.data) return;
+
+      const data = response.data;
+      setRevenueEarnedLamports(Number(data.revenue_earned_lamports) || 0);
+      setRevenueClaimedLamports(Number(data.revenue_claimed_lamports) || 0);
+      setWalletClaimCount(Number(data.wallet_claim_count) || 0);
+      setWalletLastClaimAmountLamports(Number(data.wallet_last_claim_amount_lamports) || 0);
+      setRevenueLastClaimSignature(data.revenue_last_claim_signature || '');
+    } catch (error) {
+      console.error('Wallet status refresh error:', error);
+    }
   }
 
   async function connectSolanaWallet() {
@@ -1025,6 +1045,7 @@ function App() {
           const nextPoints = Math.max(pointsRef.current, Number(data.points) || 0);
           pointsRef.current = nextPoints;
           setPoints(nextPoints);
+          refreshWalletRevenueState();
         }
       } catch (error) {
         pendingTapsRef.current += tapsToSend;
