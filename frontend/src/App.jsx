@@ -791,9 +791,12 @@ function App() {
       setWalletClaimCount(Number(data.wallet_claim_count) || 0);
       setWalletLastClaimAmountLamports(Number(data.wallet_last_claim_amount_lamports) || 0);
       setRevenueLastClaimSignature(data.revenue_last_claim_signature || '');
+      return data;
     } catch (error) {
       console.error('Wallet status refresh error:', error);
     }
+
+    return null;
   }
 
   async function connectSolanaWallet() {
@@ -857,6 +860,17 @@ function App() {
 
     setWalletClaiming(true);
     try {
+      const status = await refreshWalletRevenueState();
+      const claimableNow = Math.max(
+        0,
+        Number(status?.revenue_earned_lamports ?? revenueEarnedLamports) - Number(status?.revenue_claimed_lamports ?? revenueClaimedLamports)
+      );
+
+      if (claimableNow <= 0) {
+        showToast('⚠️', 'No claimable revenue yet. Tap more or wait for the wallet to sync.');
+        return;
+      }
+
       const response = await api.walletClaim(telegramId);
       if (!response.ok) {
         showToast('⚠️', response.error || 'Claim failed');
@@ -1600,7 +1614,7 @@ function App() {
                 <button className="wallet-btn link" type="button" disabled={walletLinking || walletClaiming} onClick={linkSolanaWallet}>
                   {walletLinked ? 'Relink' : (window.solana?.isPhantom || window.solana?.isSolflare) ? (walletAddress ? 'Sign & Link' : 'Connect & Link') : 'Verify Link'}
                 </button>
-                <button className="wallet-btn claim" type="button" disabled={walletLinking || walletClaiming || walletClaimableLamports < 10000000} onClick={claimOnchainRevenue}>
+                <button className="wallet-btn claim" type="button" disabled={walletLinking || walletClaiming || !walletLinked} onClick={claimOnchainRevenue}>
                   {walletClaiming ? 'Claiming...' : 'Claim Revenue'}
                 </button>
               </div>
