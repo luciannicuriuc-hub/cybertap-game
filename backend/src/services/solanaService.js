@@ -32,6 +32,17 @@ function stripWrappedQuotes(value) {
     return trimmed;
 }
 
+function isValidSecretKeyValue(secretKeyValue) {
+    if (!secretKeyValue) return false;
+
+    try {
+        normalizeSecretKey(secretKeyValue);
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
 function normalizeSecretKey(secretKeyValue) {
     if (!secretKeyValue) return null;
 
@@ -46,17 +57,25 @@ function normalizeSecretKey(secretKeyValue) {
                     ? parsed.secretKey
                     : null;
 
-            if (candidate) {
+            if (candidate && candidate.length === 64) {
                 return Keypair.fromSecretKey(Uint8Array.from(candidate));
             }
         }
 
         if (normalizedValue.startsWith('[')) {
             const parsed = JSON.parse(normalizedValue);
+            if (!Array.isArray(parsed) || parsed.length !== 64) {
+                throw new Error('Secret key array must contain 64 numbers');
+            }
+
             return Keypair.fromSecretKey(Uint8Array.from(parsed));
         }
 
         const decoded = bs58.decode(normalizedValue);
+        if (decoded.length !== 64) {
+            throw new Error('Secret key must decode to 64 bytes');
+        }
+
         return Keypair.fromSecretKey(decoded);
     } catch (error) {
         const normalizedValue = stripWrappedQuotes(secretKeyValue);
@@ -81,11 +100,20 @@ function normalizeSecretKey(secretKeyValue) {
 }
 
 function getTreasurySecretKeyValue() {
-    return process.env.private_key
-        || process.env.PRIVATE_KEY
-        || process.env.SOLANA_PRIVATE_KEY
-        || process.env.SOLANA_TREASURY_SECRET_KEY
-        || '';
+    const candidates = [
+        process.env.private_key,
+        process.env.PRIVATE_KEY,
+        process.env.SOLANA_PRIVATE_KEY,
+        process.env.SOLANA_TREASURY_SECRET_KEY,
+    ];
+
+    for (const candidate of candidates) {
+        if (isValidSecretKeyValue(candidate)) {
+            return candidate;
+        }
+    }
+
+    return candidates.find((candidate) => stripWrappedQuotes(candidate)) || '';
 }
 
 function getConnection() {
