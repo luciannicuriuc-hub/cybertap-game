@@ -84,7 +84,7 @@ async function registerBotHandlers(bot) {
                 parse_mode: 'Markdown',
                 reply_markup: {
                     inline_keyboard: [
-                        [{ text: '🎮 Play CyberTap', web_app: { url: process.env.WEBAPP_URL || 'https://industrious-integrity-production-5d74.up.railway.app' } }],
+                        [{ text: '🎮 Play CyberTap', web_app: { url: 'https://industrious-integrity-production-5d74.up.railway.app' } }],
                         [{ text: '👥 Invite Friends', callback_data: 'referral' }],
                         [
                             { text: '📊 My Stats', callback_data: 'stats' },
@@ -93,8 +93,6 @@ async function registerBotHandlers(bot) {
                     ],
                 },
             });
-
-            console.log('🎮 WEBAPP_URL used:', process.env.WEBAPP_URL || 'https://industrious-integrity-production-5d74.up.railway.app');
         } catch (err) {
             console.error('Start command error:', err);
             await ctx.reply('❌ Error. Please try again with /start');
