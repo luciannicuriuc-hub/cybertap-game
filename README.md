@@ -15,9 +15,12 @@ Monorepo-ul este împărțit clar în două aplicații:DASJDaDAS
 ```env
 BOT_TOKEN=your_telegram_bot_token
 DATABASE_URL=postgresql://user:password@localhost:5432/cybertap
+DATABASE_URL_PUBLIC=postgresql://user:password@host:5432/cybertap
 PORT=3000
 WEBAPP_URL=https://your-frontend-domain.example
 ```
+
+If your backend `.env` contains the Railway internal Postgres host, that value works only inside Railway. For local migration runs, keep `DATABASE_URL` for deployment and add `DATABASE_URL_PUBLIC` with the public Railway Postgres connection string, then run `cd backend && npm run migrate`.
 
 ### Frontend
 
