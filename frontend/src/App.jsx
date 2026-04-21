@@ -221,6 +221,11 @@ function App() {
   const [walletClaimCount, setWalletClaimCount] = useState(0);
   const [walletLastClaimAmountLamports, setWalletLastClaimAmountLamports] = useState(0);
   const [revenueLastClaimSignature, setRevenueLastClaimSignature] = useState('');
+  const [walletManualMode, setWalletManualMode] = useState(false);
+  const [walletLinkChallenge, setWalletLinkChallenge] = useState('');
+  const [walletLinkChallengeExpiresAt, setWalletLinkChallengeExpiresAt] = useState(0);
+  const [walletManualAddress, setWalletManualAddress] = useState('');
+  const [walletManualSignature, setWalletManualSignature] = useState('');
 
   const canvasRef = useRef(null);
   const animationFrameRef = useRef(0);
@@ -261,6 +266,13 @@ function App() {
   const walletClaimableLamports = Math.max(0, revenueEarnedLamports - revenueClaimedLamports);
   const walletLinked = Boolean(walletAddress && walletVerifiedAt);
   const walletStatusLabel = walletLinked ? 'Linked' : walletAddress ? 'Connected' : 'Not connected';
+
+  useEffect(() => {
+    const provider = window.solana;
+    if (!provider?.isPhantom && !provider?.isSolflare) {
+      setWalletManualMode(true);
+    }
+  }, []);
 
   useEffect(() => {
     document.title = appName;
@@ -728,10 +740,48 @@ function App() {
     }
   }
 
+  async function prepareWalletLinkChallenge() {
+    if (!telegramId) return null;
+
+    const challengeResponse = await api.walletChallenge(telegramId);
+    if (!challengeResponse.ok) {
+      showToast('⚠️', challengeResponse.error || 'Could not create wallet challenge');
+      return null;
+    }
+
+    const challengeData = challengeResponse.data || {};
+    setWalletLinkChallenge(challengeData.message || '');
+    setWalletLinkChallengeExpiresAt(Number(challengeData.expires_at) || 0);
+    setWalletManualMode(true);
+    return challengeData;
+  }
+
+  async function verifyWalletLinkSubmission(address, signature) {
+    const verifyResponse = await api.walletVerify(telegramId, address, signature);
+    if (!verifyResponse.ok) {
+      showToast('⚠️', verifyResponse.error || 'Wallet verification failed');
+      return false;
+    }
+
+    const verifiedData = verifyResponse.data || {};
+    setWalletAddress(verifiedData.wallet_address || address);
+    setWalletVerifiedAt(Number(verifiedData.wallet_verified_at) || Date.now());
+    setRevenueEarnedLamports(Number(verifiedData.revenue_earned_lamports) || revenueEarnedLamports);
+    setRevenueClaimedLamports(Number(verifiedData.revenue_claimed_lamports) || revenueClaimedLamports);
+    setWalletClaimCount(Number(verifiedData.wallet_claim_count) || 0);
+    setWalletLastClaimAmountLamports(Number(verifiedData.wallet_last_claim_amount_lamports) || 0);
+    setRevenueLastClaimSignature(verifiedData.revenue_last_claim_signature || '');
+    setWalletManualSignature('');
+    showToast('✅', 'Wallet linked to Telegram account');
+    return true;
+  }
+
   async function connectSolanaWallet() {
     const provider = window.solana;
     if (!provider?.isPhantom && !provider?.isSolflare) {
-      showToast('⚠️', 'No Solana wallet detected. Install Phantom or another wallet.');
+      setWalletManualMode(true);
+      await prepareWalletLinkChallenge();
+      showToast('ℹ️', 'No browser wallet detected. Paste your address and signature below.');
       return null;
     }
 
@@ -745,47 +795,35 @@ function App() {
     if (!telegramId) return;
 
     const provider = window.solana;
-    if (!provider?.signMessage) {
-      showToast('⚠️', 'Your wallet does not support message signing.');
-      return;
-    }
-
     setWalletLinking(true);
     try {
-      const address = await connectSolanaWallet();
-      if (!address) return;
-
-      const challengeResponse = await api.walletChallenge(telegramId);
-      if (!challengeResponse.ok) {
-        showToast('⚠️', challengeResponse.error || 'Could not create wallet challenge');
-        return;
-      }
-
-      const message = challengeResponse.data?.message;
+      const challengeData = walletLinkChallenge ? { message: walletLinkChallenge } : await prepareWalletLinkChallenge();
+      const message = challengeData?.message;
       if (!message) {
         showToast('⚠️', 'Challenge message is missing');
         return;
       }
 
-      const encodedMessage = new TextEncoder().encode(message);
-      const signed = await provider.signMessage(encodedMessage, 'utf8');
-      const signature = Array.from(signed.signature || signed);
+      if (provider?.signMessage && (provider.isPhantom || provider.isSolflare)) {
+        const address = await connectSolanaWallet();
+        if (!address) return;
 
-      const verifyResponse = await api.walletVerify(telegramId, address, signature);
-      if (!verifyResponse.ok) {
-        showToast('⚠️', verifyResponse.error || 'Wallet verification failed');
+        const encodedMessage = new TextEncoder().encode(message);
+        const signed = await provider.signMessage(encodedMessage, 'utf8');
+        const signature = Array.from(signed.signature || signed);
+        await verifyWalletLinkSubmission(address, signature);
         return;
       }
 
-      const verifiedData = verifyResponse.data || {};
-      setWalletAddress(verifiedData.wallet_address || address);
-      setWalletVerifiedAt(Number(verifiedData.wallet_verified_at) || Date.now());
-      setRevenueEarnedLamports(Number(verifiedData.revenue_earned_lamports) || revenueEarnedLamports);
-      setRevenueClaimedLamports(Number(verifiedData.revenue_claimed_lamports) || revenueClaimedLamports);
-      setWalletClaimCount(Number(verifiedData.wallet_claim_count) || 0);
-      setWalletLastClaimAmountLamports(Number(verifiedData.wallet_last_claim_amount_lamports) || 0);
-      setRevenueLastClaimSignature(verifiedData.revenue_last_claim_signature || '');
-      showToast('✅', 'Wallet linked to Telegram account');
+      const address = walletManualAddress.trim();
+      const signature = walletManualSignature.trim();
+      if (!address || !signature) {
+        setWalletManualMode(true);
+        showToast('⚠️', 'Paste your wallet address and signature first.');
+        return;
+      }
+
+      await verifyWalletLinkSubmission(address, signature);
     } catch (error) {
       console.error('Wallet link error:', error);
       showToast('⚠️', 'Wallet linking failed');
@@ -1478,6 +1516,47 @@ function App() {
                 <div className="wallet-address-value">{walletAddress ? shortenAddress(walletAddress) : 'Not linked yet'}</div>
               </div>
 
+              {(walletManualMode || (!window.solana?.isPhantom && !window.solana?.isSolflare)) ? (
+                <div className="wallet-manual-box">
+                  <div className="wallet-manual-title">Manual link</div>
+                  <div className="wallet-manual-note">
+                    Use your wallet app to sign the challenge, then paste the address and signature here.
+                  </div>
+                  <input
+                    className="wallet-input"
+                    type="text"
+                    value={walletManualAddress}
+                    onChange={(event) => setWalletManualAddress(event.target.value)}
+                    placeholder="Wallet address"
+                    autoComplete="off"
+                    spellCheck="false"
+                  />
+                  <textarea
+                    className="wallet-input wallet-signature"
+                    value={walletManualSignature}
+                    onChange={(event) => setWalletManualSignature(event.target.value)}
+                    placeholder="Signature"
+                    rows={3}
+                    spellCheck="false"
+                  />
+                  <textarea
+                    className="wallet-input wallet-challenge"
+                    value={walletLinkChallenge || 'Click Connect or Link to generate a challenge.'}
+                    readOnly
+                    rows={4}
+                  />
+                  <div className="wallet-manual-actions">
+                    <button className="wallet-btn connect" type="button" disabled={walletLinking || walletClaiming} onClick={prepareWalletLinkChallenge}>
+                      Get Challenge
+                    </button>
+                    <button className="wallet-btn link" type="button" disabled={walletLinking || walletClaiming} onClick={linkSolanaWallet}>
+                      Verify Manual Link
+                    </button>
+                  </div>
+                  {walletLinkChallengeExpiresAt > 0 ? <div className="wallet-note">Challenge expires at {new Date(walletLinkChallengeExpiresAt).toLocaleTimeString()}</div> : null}
+                </div>
+              ) : null}
+
               <div className="wallet-metrics">
                 <div className="wallet-metric">
                   <span className="wallet-metric-label">Earned</span>
@@ -1495,10 +1574,10 @@ function App() {
 
               <div className="wallet-actions">
                 <button className="wallet-btn connect" type="button" disabled={walletLinking || walletClaiming} onClick={connectSolanaWallet}>
-                  {walletAddress ? 'Reconnect' : 'Connect'}
+                  {walletAddress ? 'Reconnect' : (window.solana?.isPhantom || window.solana?.isSolflare) ? 'Connect' : 'Open Manual Link'}
                 </button>
                 <button className="wallet-btn link" type="button" disabled={walletLinking || walletClaiming} onClick={linkSolanaWallet}>
-                  {walletLinked ? 'Relink' : walletAddress ? 'Sign & Link' : 'Connect & Link'}
+                  {walletLinked ? 'Relink' : (window.solana?.isPhantom || window.solana?.isSolflare) ? (walletAddress ? 'Sign & Link' : 'Connect & Link') : 'Verify Link'}
                 </button>
                 <button className="wallet-btn claim" type="button" disabled={walletLinking || walletClaiming || walletClaimableLamports < 10000000} onClick={claimOnchainRevenue}>
                   {walletClaiming ? 'Claiming...' : 'Claim Revenue'}
