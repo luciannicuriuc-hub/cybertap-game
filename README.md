@@ -1,0 +1,62 @@
+# CyberTap Game Monorepo
+
+Monorepo-ul este împărțit clar în două aplicații:
+
+- `backend/` - server Node.js cu Express, PostgreSQL și Telegraf
+- `frontend/` - aplicația React + Vite + Tailwind pentru WebApp
+- `frontend/src/index.html` - entrypoint-ul Vite pentru frontend-ul nou
+
+## Ce variabile `.env` ai nevoie
+
+### Backend
+
+`backend/.env`
+
+```env
+BOT_TOKEN=your_telegram_bot_token
+DATABASE_URL=postgresql://user:password@localhost:5432/cybertap
+PORT=3000
+WEBAPP_URL=http://localhost:5173
+```
+
+### Frontend
+
+`frontend/.env`
+
+```env
+VITE_API_URL=http://localhost:3000
+VITE_TELEGRAM_BOT_NAME=your_bot_username
+VITE_APP_NAME=CyberTap
+VITE_DEMO_TELEGRAM_ID=123456789
+```
+
+## Cum rulezi local
+
+1. Copiază fișierele example în `.env` locale și completează valorile.
+2. Instalează dependențele la rădăcina proiectului:
+
+```sh
+npm install
+```
+
+3. Pornește ambele aplicații:
+
+```sh
+npm run dev
+```
+
+4. Dacă vrei să le pornești separat:
+
+```sh
+npm run dev:backend
+npm run dev:frontend
+```
+
+## Structura actuală
+
+- frontend-ul nou este construit ca proiect React/Vite/Tailwind și se ocupă de UI
+- backend-ul rămâne funcțional, dar îl voi reorganiza separat în pașii următori
+
+## Observație
+
+Dacă ai deja un token real în `backend/.env`, nu-l posta public. În repo păstrează doar placeholder-ele sau un fișier example.

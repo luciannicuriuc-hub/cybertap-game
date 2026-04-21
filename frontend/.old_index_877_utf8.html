@@ -1,0 +1,617 @@
+﻿<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberTap</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            width: 100%;
+            background: #111;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #00ff8833;
+        }
+
+        .username {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .points-display {
+            text-align: center;
+            margin: 30px 0 10px;
+        }
+
+        .points-number {
+            font-size: 48px;
+            font-weight: bold;
+            color: #00ff88;
+            text-shadow: 0 0 20px #00ff8866;
+        }
+
+        .points-label {
+            font-size: 14px;
+            color: #555;
+            margin-top: 5px;
+        }
+
+        .per-hour {
+            font-size: 14px;
+            color: #00aaff;
+            margin-bottom: 20px;
+        }
+
+        .offline-banner {
+            background: #1a1a00;
+            border: 1px solid #ffff0044;
+            color: #ffff00;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin: 0 20px 20px;
+            text-align: center;
+            display: none;
+            width: calc(100% - 40px);
+        }
+
+        .tap-button {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #1a3a2a, #0d1f15);
+            border: 3px solid #00ff88;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s;
+            box-shadow: 0 0 30px #00ff8833;
+            margin: 10px 0 30px;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        .tap-button:active {
+            transform: scale(0.92);
+            box-shadow: 0 0 50px #00ff8866;
+        }
+
+        .tap-icon {
+            font-size: 60px;
+        }
+
+        .tap-text {
+            font-size: 12px;
+            color: #00ff8888;
+            margin-top: 5px;
+        }
+
+        .float-text {
+            position: fixed;
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ff88;
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+            z-index: 999;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-100px); }
+        }
+
+        .tabs {
+            display: flex;
+            width: 100%;
+            border-top: 1px solid #00ff8833;
+            margin-top: auto;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 12px;
+            color: #555;
+            border: none;
+            background: #111;
+        }
+
+        .tab.active {
+            color: #00ff88;
+            border-top: 2px solid #00ff88;
+        }
+
+        .section {
+            display: none;
+            width: 100%;
+            padding: 20px;
+            flex: 1;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .upgrade-card {
+            background: #111;
+            border: 1px solid #00ff8833;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .upgrade-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .upgrade-icon {
+            font-size: 32px;
+        }
+
+        .upgrade-name {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .upgrade-stats {
+            font-size: 11px;
+            color: #555;
+            margin-top: 3px;
+        }
+
+        .upgrade-level {
+            font-size: 11px;
+            color: #00aaff;
+            margin-top: 2px;
+        }
+
+        .buy-btn {
+            background: #0d2a1a;
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            white-space: nowrap;
+        }
+
+        .buy-btn:disabled {
+            border-color: #333;
+            color: #333;
+            cursor: not-allowed;
+        }
+
+        .leaderboard-item {
+            background: #111;
+            border: 1px solid #00ff8822;
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .rank {
+            font-size: 18px;
+            width: 30px;
+            text-align: center;
+        }
+
+        .lb-name {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .lb-points {
+            font-size: 13px;
+            color: #00aaff;
+        }
+
+        .daily-btn {
+            width: 100%;
+            padding: 20px;
+            background: #0d2a1a;
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            border-radius: 15px;
+            font-size: 18px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 20px;
+        }
+
+        .daily-btn:disabled {
+            border-color: #333;
+            color: #333;
+            cursor: not-allowed;
+        }
+
+        .streak-info {
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .referral-box {
+            background: #111;
+            border: 1px solid #00ff8833;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .referral-link {
+            font-size: 12px;
+            color: #00aaff;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+
+        .copy-btn {
+            width: 100%;
+            padding: 12px;
+            background: #00ff88;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #00ff88;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <span class="username" id="username">@player</span>
+        <span style="font-size:12px; color:#555;">CyberTap v1.0</span>
+    </div>
+
+    <!-- SECTIUNEA PRINCIPALA - TAP -->
+    <div id="section-tap" class="section active">
+        <div class="points-display">
+            <div class="points-number" id="points-display">0</div>
+            <div class="points-label">BOOM Points</div>
+        </div>
+        <div class="per-hour" id="per-hour-display">ÔÜí 0 / or─â</div>
+
+        <div class="offline-banner" id="offline-banner">
+            ­ƒÆ░ Ai c├ó╚Ötigat <span id="offline-amount">0</span> puncte offline!
+        </div>
+
+        <button class="tap-button" id="tap-btn" onclick="handleTap(event)">
+            <span class="tap-icon">­ƒÆ╗</span>
+            <span class="tap-text">HACK</span>
+        </button>
+    </div>
+
+    <!-- SECTIUNEA UPGRADE-URI -->
+    <div id="section-upgrades" class="section">
+        <div class="section-title">ÔÜÖ´©Å Upgrade-uri</div>
+        <div id="upgrades-list"></div>
+    </div>
+
+    <!-- SECTIUNEA LEADERBOARD -->
+    <div id="section-leaderboard" class="section">
+        <div class="section-title">­ƒÅå Top Juc─âtori</div>
+        <div id="leaderboard-list"></div>
+    </div>
+
+    <!-- SECTIUNEA DAILY + REFERRAL -->
+    <div id="section-daily" class="section">
+        <div class="section-title">­ƒÄü Recompense Zilnice</div>
+        <div class="streak-info" id="streak-info">Streak: 0 zile</div>
+        <button class="daily-btn" id="daily-btn" onclick="claimDaily()">
+            ­ƒÄü Revendic─â Recompensa Zilnic─â
+        </button>
+
+        <div class="section-title">­ƒæÑ Invit─â Prieteni</div>
+        <div class="referral-box">
+            <div style="font-size:14px;">Link-ul t─âu de referral:</div>
+            <div class="referral-link" id="referral-link">Se ├«ncarc─â...</div>
+            <button class="copy-btn" onclick="copyReferral()">­ƒôï Copiaz─â Link</button>
+        </div>
+        <div style="color:#888; font-size:13px; text-align:center;">
+            Prime╚Öti 500 puncte pentru fiecare prieten invitat!
+        </div>
+    </div>
+
+    <!-- MENIU JOS -->
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('tap', this)">­ƒÄ« Joc</button>
+        <button class="tab" onclick="switchTab('upgrades', this)">ÔÜÖ´©Å Shop</button>
+        <button class="tab" onclick="switchTab('leaderboard', this)">­ƒÅå Top</button>
+        <button class="tab" onclick="switchTab('daily', this)">­ƒÄü Daily</button>
+    </div>
+
+    <script src="[telegram.org](https://telegram.org/js/telegram-web-app.js)"></script>
+    <script>
+        const BACKEND_URL = '[localhost](http://localhost:3000)';
+        
+        let telegramId = null;
+        let currentPoints = 0;
+        let pointsPerHour = 0;
+        let pendingTaps = 0;
+        let tapTimer = null;
+        let botUsername = '';
+
+        // Initializare
+        window.onload = async function() {
+            // Initializeaza Telegram WebApp
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.ready();
+                window.Telegram.WebApp.expand();
+                
+                const user = window.Telegram.WebApp.initDataUnsafe?.user;
+                if (user) {
+                    telegramId = user.id;
+                    document.getElementById('username').textContent = '@' + (user.username || user.first_name);
+                }
+            }
+
+            // Pentru testare locala fara Telegram
+            if (!telegramId) {
+                telegramId = 12345;
+                document.getElementById('username').textContent = '@test_user';
+            }
+
+            await loadUserData();
+            
+            // Actualizeaza punctele la fiecare secunda (passive income)
+            setInterval(updatePointsLocally, 1000);
+            
+            // Trimite tap-urile la server la fiecare 3 secunde
+            setInterval(sendPendingTaps, 3000);
+        };
+
+        async function loadUserData() {
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/user/${telegramId}`);
+                const data = await res.json();
+                
+                currentPoints = data.points;
+                pointsPerHour = data.points_per_hour;
+                
+                document.getElementById('points-display').textContent = formatNumber(currentPoints);
+                document.getElementById('per-hour-display').textContent = `ÔÜí ${formatNumber(pointsPerHour)} / or─â`;
+                
+                // Arata banner offline daca are earnings
+                if (data.offline_earnings > 0) {
+                    document.getElementById('offline-amount').textContent = formatNumber(data.offline_earnings);
+                    document.getElementById('offline-banner').style.display = 'block';
+                    
+                    // Colecteaza automat dupa 3 secunde
+                    setTimeout(async () => {
+                        await fetch(`${BACKEND_URL}/api/collect`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ telegramId })
+                        });
+                        currentPoints += data.offline_earnings;
+                        document.getElementById('offline-banner').style.display = 'none';
+                    }, 3000);
+                }
+
+                // Incarca upgrade-urile
+                renderUpgrades(data.upgrades);
+
+                // Seteaza link referral
+                const botInfo = await fetch(`${BACKEND_URL}/api/botinfo`).then(r => r.json()).catch(() => null);
+                if (botInfo) {
+                    document.getElementById('referral-link').textContent = 
+                        `[t.me](https://t.me/${botInfo.username}?start=${telegramId})`;
+                }
+
+            } catch(e) {
+                console.error('Eroare la incarcarea datelor:', e);
+            }
+        }
+
+        function handleTap(event) {
+            pendingTaps++;
+            currentPoints++;
+            document.getElementById('points-display').textContent = formatNumber(currentPoints);
+            
+            // Efect vizual - numarul sare
+            const floatEl = document.createElement('div');
+            floatEl.className = 'float-text';
+            floatEl.textContent = '+1';
+            floatEl.style.left = (event.clientX - 15) + 'px';
+            floatEl.style.top = (event.clientY - 20) + 'px';
+            document.body.appendChild(floatEl);
+            setTimeout(() => floatEl.remove(), 1000);
+        }
+
+        async function sendPendingTaps() {
+            if (pendingTaps === 0) return;
+            
+            const tapsToSend = pendingTaps;
+            pendingTaps = 0;
+            
+            try {
+                await fetch(`${BACKEND_URL}/api/tap`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ telegramId, taps: tapsToSend })
+                });
+            } catch(e) {
+                pendingTaps += tapsToSend;
+            }
+        }
+
+        function updatePointsLocally() {
+            if (pointsPerHour > 0) {
+                currentPoints += pointsPerHour / 3600;
+                document.getElementById('points-display').textContent = formatNumber(Math.floor(currentPoints));
+            }
+        }
+
+        function renderUpgrades(upgrades) {
+            const list = document.getElementById('upgrades-list');
+            list.innerHTML = '';
+            
+            upgrades.forEach(upgrade => {
+                const cost = Math.floor(upgrade.base_cost * Math.pow(1.5, upgrade.level));
+                const canAfford = currentPoints >= cost;
+                
+                const card = document.createElement('div');
+                card.className = 'upgrade-card';
+                card.innerHTML = `
+                    <div class="upgrade-info">
+                        <span class="upgrade-icon">${upgrade.icon}</span>
+                        <div>
+                            <div class="upgrade-name">${upgrade.name}</div>
+                            <div class="upgrade-stats">+${formatNumber(upgrade.points_per_hour)} / or─â</div>
+                            <div class="upgrade-level">Nivel ${upgrade.level}</div>
+                        </div>
+                    </div>
+                    <button class="buy-btn" 
+                        onclick="buyUpgrade(${upgrade.id})" 
+                        ${!canAfford ? 'disabled' : ''}
+                        id="upgrade-btn-${upgrade.id}">
+                        ­ƒÆ░ ${formatNumber(cost)}
+                    </button>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        async function buyUpgrade(upgradeId) {
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/upgrade`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ telegramId, upgradeId })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    currentPoints = data.points;
+                    pointsPerHour = data.points_per_hour;
+                    document.getElementById('points-display').textContent = formatNumber(currentPoints);
+                    document.getElementById('per-hour-display').textContent = `ÔÜí ${formatNumber(pointsPerHour)} / or─â`;
+                    await loadUserData();
+                } else {
+                    alert('Nu ai suficiente puncte!');
+                }
+            } catch(e) {
+                console.error('Eroare upgrade:', e);
+            }
+        }
+
+        async function loadLeaderboard() {
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/leaderboard`);
+                const data = await res.json();
+                
+                const list = document.getElementById('leaderboard-list');
+                list.innerHTML = '';
+                
+                const medals = ['­ƒÑç', '­ƒÑê', '­ƒÑë'];
+                
+                data.forEach((player, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'leaderboard-item';
+                    item.innerHTML = `
+                        <span class="rank">${medals[index] || (index + 1)}</span>
+                        <span class="lb-name">${player.first_name || player.username || 'Anonim'}</span>
+                        <span class="lb-points">${formatNumber(player.points)} pts</span>
+                    `;
+                    list.appendChild(item);
+                });
+            } catch(e) {
+                console.error('Eroare leaderboard:', e);
+            }
+        }
+
+        async function claimDaily() {
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/daily`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ telegramId })
+                });
+                
+                const data = await res.json();
+                
+                if (data.reward) {
+                    currentPoints += data.reward;
+                    document.getElementById('points-display').textContent = formatNumber(currentPoints);
+                    document.getElementById('streak-info').textContent = `Streak: ${data.streak} zile ­ƒöÑ`;
+                    alert(`­ƒÄü Ai primit ${formatNumber(data.reward)} puncte!\nStreak: ${data.streak} zile`);
+                    document.getElementById('daily-btn').disabled = true;
+                    document.getElementById('daily-btn').textContent = 'Ô£à Revendicat azi';
+                } else {
+                    const hours = Math.floor(data.time_left / (1000 * 60 * 60));
+                    const minutes = Math.floor((data.time_left % (1000 * 60 * 60)) / (1000 * 60));
+                    alert(`ÔÅ░ Revino peste ${hours}h ${minutes}m`);
+                }
+            } catch(e) {
+                console.error('Eroare daily:', e);
+            }
+        }
+
+        function copyReferral() {
+            const link = document.getElementById('referral-link').textContent;
+            navigator.clipboard.writeText(link).then(() => {
+                alert('Link copiat!');
+            });
+        }
+
+        function switchTab(tab, el) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            
+            document.getElementById('section-' + tab).classList.add('active');
+            el.classList.add('active');
+            
+            if (tab === 'leaderboard') loadLeaderboard();
+        }
+
+        function formatNumber(num) {
+            num = Math.floor(num);
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toString();
+        }
+    </script>
+</body>
+</html>
