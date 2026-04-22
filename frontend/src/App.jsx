@@ -232,6 +232,7 @@ function App() {
   const particlesRef = useRef([]);
   const pendingTapsRef = useRef(0);
   const holdIntervalRef = useRef(null);
+  const comboCountRef = useRef(0);
   const offlineCollectTimerRef = useRef(null);
   const passiveTimerRef = useRef(null);
   const tapSyncTimerRef = useRef(null);
@@ -369,15 +370,25 @@ function App() {
         particle.y += particle.speedY;
         particle.speedY += particle.gravity;
         particle.life -= particle.decay;
-        particle.size *= 0.97;
+        if (particle.type !== 'fire') {
+          particle.size *= 0.97;
+        }
 
         context.save();
         context.globalAlpha = Math.max(particle.life, 0);
         context.fillStyle = particle.color;
-        context.shadowBlur = 15;
+        context.shadowBlur = particle.type === 'cyber' ? 5 : 15;
         context.shadowColor = particle.color;
         context.beginPath();
-        context.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+        
+        if (particle.type === 'cyber') {
+          context.rect(particle.x - particle.size/2, particle.y - particle.size/2, Math.max(0, particle.size), Math.max(0, particle.size));
+        } else if (particle.type === 'fire') {
+          context.arc(particle.x, particle.y, Math.max(0.1, particle.size * particle.life), 0, Math.PI * 2);
+        } else {
+          context.arc(particle.x, particle.y, Math.max(0.1, particle.size), 0, Math.PI * 2);
+        }
+        
         context.fill();
         context.restore();
       }
@@ -411,32 +422,61 @@ function App() {
     setModal((value) => ({ ...value, show: false }));
   }
 
-  function createExplosion(x, y, count = 15, color = null) {
+  function createExplosion(x, y, count = 15, color = null, type = 'circle', intensity = 0) {
     for (let index = 0; index < count; index += 1) {
+      const angle = Math.random() * Math.PI * 2;
+      const baseSpeed = Math.random() * 8 + 2;
+      const speed = baseSpeed + (intensity * 10); // More intensity = faster
+      
+      let speedX = Math.cos(angle) * speed;
+      let speedY = Math.sin(angle) * speed;
+      let gravity = 0.3;
+      
+      if (type === 'fire') {
+        speedX = (Math.random() - 0.5) * (6 + intensity * 8);
+        speedY = (Math.random() - 1) * (12 + intensity * 15); // Go upwards
+        gravity = -0.2 - (intensity * 0.2); // Fly up faster
+      } else if (type === 'cyber') {
+        speedX = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 8 + 4);
+        speedY = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 8 + 4);
+        gravity = 0; // Linear movement for cyber look
+      }
+
       particlesRef.current.push({
         x,
         y,
-        size: Math.random() * 6 + 2,
-        speedX: (Math.random() - 0.5) * 12,
-        speedY: (Math.random() - 0.5) * 12 - 5,
-        gravity: 0.3,
+        size: type === 'fire' ? Math.random() * (12 + intensity*10) + 8 : Math.random() * 6 + 4,
+        speedX,
+        speedY,
+        gravity,
         life: 1,
-        decay: Math.random() * 0.03 + 0.02,
-        color: color || (Math.random() > 0.3 ? '#00ff88' : '#fbbf24'),
+        decay: type === 'fire' ? Math.random() * 0.04 + 0.015 : Math.random() * 0.03 + 0.02,
+        color: color || (Math.random() > 0.3 ? '#00ff88' : '#00d4ff'),
+        type
       });
     }
   }
 
-  function showFloatingNumber(x, y, amount, critical) {
+  function showFloatingNumber(x, y, amount, critical, intensity = 0) {
     const id = `${Date.now()}-${Math.random()}`;
+    const angle = Math.random() * Math.PI * 2;
+    // Base distance + chaos from intensity
+    const distance = 40 + Math.random() * 60 + (intensity * 100);
+    const endX = Math.cos(angle) * distance;
+    const endY = Math.sin(angle) * distance - 100 - (intensity * 50);
+
     setFloaters((current) => [
       ...current,
       {
         id,
-        left: x - 30 + Math.random() * 60 - 30,
-        top: y - 50,
+        startX: x,
+        startY: y,
+        endX,
+        endY,
         amount,
         critical,
+        intensity,
+        rotation: (Math.random() - 0.5) * 60
       },
     ]);
 
@@ -468,7 +508,24 @@ function App() {
       clearInterval(holdIntervalRef.current);
       holdIntervalRef.current = null;
     }
+    comboCountRef.current = 0;
     setTapStatusText('TAP TO HACK');
+
+    // Reset DOM elements
+    const outerGlow = document.getElementById('tap-core-glow');
+    const innerBg = document.getElementById('tap-core-inner');
+    const tapIcon = document.getElementById('tap-core-icon');
+    const tapButton = document.getElementById('tap-button');
+    
+    if (outerGlow) outerGlow.style.boxShadow = '';
+    if (innerBg) innerBg.style.background = '';
+    if (tapIcon) {
+       tapIcon.style.color = '';
+       tapIcon.style.textShadow = '';
+    }
+    if (tapButton) tapButton.style.transform = '';
+    document.body.style.transform = '';
+    document.body.style.backgroundColor = '';
   }
 
   function performTap(target) {
@@ -510,7 +567,69 @@ function App() {
     const y = rect.top + rect.height / 2;
 
     showFloatingNumber(x, y, tapPoints, critical);
-    createExplosion(x, y, critical ? 20 : 8, critical ? '#fbbf24' : '#00ff88');
+    
+    const currentCombo = comboCountRef.current;
+    const isCombo = currentCombo > 4;
+    // Max intensity reached around 50 ticks (4 seconds)
+    const rawIntensity = Math.min(1, currentCombo / 50);
+    const smoothIntensity = Math.pow(rawIntensity, 2);
+
+    showFloatingNumber(x, y, tapPoints, critical, smoothIntensity);
+
+    const outerGlow = document.getElementById('tap-core-glow');
+    const innerBg = document.getElementById('tap-core-inner');
+    const tapIcon = document.getElementById('tap-core-icon');
+
+    if (isCombo) {
+      setTapStatusText('FIRE MODE 🔥');
+
+      if (outerGlow && innerBg && tapIcon) {
+        const r = Math.floor(255);
+        const g = Math.floor(100 * (1 - smoothIntensity)); 
+        const b = Math.floor(255 * (1 - smoothIntensity)); 
+        
+        outerGlow.style.boxShadow = `0 0 ${60 + 120*smoothIntensity}px ${10 + 50*smoothIntensity}px rgba(255, ${60 * (1-smoothIntensity)}, 0, ${0.7 + 0.3*smoothIntensity}), inset 0 0 20px rgba(255, 100, 100, 0.5)`;
+        
+        // Transition gradient from blue to bright red/orange
+        innerBg.style.background = `linear-gradient(135deg, rgba(255, ${100*(1-smoothIntensity)}, 0, 1), rgba(${r}, ${g}, ${b}, 1))`;
+        
+        // Icon color transition
+        tapIcon.style.color = `rgb(255, ${255 * (1-smoothIntensity)}, ${255 * (1-smoothIntensity)})`;
+        tapIcon.style.textShadow = `0 0 ${20 + 40*smoothIntensity}px rgba(255, 0, 0, 1)`;
+        
+        // Add a shake effect if high intensity
+        if (smoothIntensity > 0.8) {
+           target.style.transform = `translate(${(Math.random() - 0.5) * 20}px, ${(Math.random() - 0.5) * 20}px) scale(0.95)`;
+           document.body.style.transform = `translate(${(Math.random() - 0.5) * 10}px, ${(Math.random() - 0.5) * 10}px)`;
+           if (Math.random() > 0.5) {
+              document.body.style.backgroundColor = `rgba(255, 0, 0, ${0.2 * smoothIntensity})`;
+           } else {
+              document.body.style.backgroundColor = '';
+           }
+        } else if (smoothIntensity > 0.3) {
+           target.style.transform = `translate(${(Math.random() - 0.5) * (15 * smoothIntensity)}px, ${(Math.random() - 0.5) * (15 * smoothIntensity)}px) scale(0.95)`;
+           document.body.style.transform = '';
+           document.body.style.backgroundColor = '';
+        }
+      }
+
+      const particleCount = Math.floor(8 + 25 * smoothIntensity);
+      createExplosion(x, y + 20, critical ? particleCount + 10 : particleCount, critical ? '#ff4500' : '#ff0000', 'fire', smoothIntensity);
+      createExplosion(x, y + 20, Math.floor(3 + 10 * smoothIntensity), '#ffaa00', 'fire', smoothIntensity); 
+    } else {
+      createExplosion(x, y, critical ? 20 : 12, critical ? '#fbbf24' : '#00ffff', 'cyber');
+      
+      // Reset DOM if tapped manually
+      if (outerGlow) outerGlow.style.boxShadow = '';
+      if (innerBg) innerBg.style.background = '';
+      if (tapIcon) {
+         tapIcon.style.color = '';
+         tapIcon.style.textShadow = '';
+      }
+      target.style.transform = '';
+      document.body.style.transform = '';
+      document.body.style.backgroundColor = '';
+    }
 
     if (critical) {
       setTapCritical(true);
@@ -527,8 +646,10 @@ function App() {
     }
 
     stopTapping();
+    comboCountRef.current = 0;
     setTapStatusText('HACKING... ⚡');
-    performTap(event.currentTarget);
+    const target = event.currentTarget;
+    performTap(target);
 
     holdIntervalRef.current = window.setInterval(() => {
       if (energyRef.current <= 0) {
@@ -536,7 +657,8 @@ function App() {
         return;
       }
 
-      performTap(event.currentTarget);
+      comboCountRef.current += 1;
+      performTap(target);
     }, 80);
   }
 
@@ -1125,40 +1247,48 @@ function App() {
   const spinButtonLabel = isBootstrapping ? 'Loading...' : wheelSpinning ? 'Spinning...' : wheelSpunToday ? 'Spun Today!' : 'Spin the Wheel';
 
   return (
-    <div className="app">
+    <div className="app bg-background text-on-background font-body-md min-h-screen circuit-bg">
       <div className="bg-animation" />
       <div className="matrix-bg" />
-      <canvas id="particle-canvas" ref={canvasRef} />
+      <canvas id="particle-canvas" ref={canvasRef} className="fixed inset-0 pointer-events-none z-[100]" />
 
       {floaters.map((item) => (
         <div
           key={item.id}
-          className={`float-text ${item.critical ? 'critical' : ''}`}
-          style={{ left: `${item.left}px`, top: `${item.top}px` }}
+          className={`fixed pointer-events-none z-[100] font-black drop-shadow-[0_4px_4px_rgba(0,0,0,1)] ${item.critical || item.intensity > 0.5 ? 'text-tertiary scale-150 z-[101]' : 'text-primary-container scale-110'}`}
+          style={{ 
+             left: `${item.startX}px`, 
+             top: `${item.startY}px`,
+             textShadow: item.critical || item.intensity > 0.5 ? '0 0 10px #ff0000, 0 0 20px #ffaa00' : '0 0 10px #0055ff, 0 0 20px #00ffff',
+             animation: `explode-out 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards`,
+             '--end-x': `${item.endX}px`,
+             '--end-y': `${item.endY}px`,
+             '--rot': `${item.rotation}deg`
+          }}
         >
-          +{formatNumber(item.amount)}{item.critical ? ' CRIT!' : ''}
+          +{formatNumber(item.amount)}{item.critical ? '!' : ''}
         </div>
       ))}
 
       {levelPopup ? <div className="level-popup">{levelPopup}</div> : null}
 
-      <header className="header">
-        <div className="header-left">
-          <span className="username" id="username">{username}</span>
-          <span className="version">CyberTap v2.0</span>
-          <span className={`version ${backendHealth === 'online' ? 'online' : backendHealth === 'degraded' ? 'degraded' : backendHealth === 'offline' ? 'offline' : ''}`}>
-            API {backendHealth === 'online' ? 'Online' : backendHealth === 'degraded' ? 'Degraded' : backendHealth === 'offline' ? 'Offline' : 'Checking'}
-          </span>
+      <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 h-16 bg-slate-950 border-b-4 border-black shadow-[0px_4px_0px_0px_rgba(0,0,0,1)]">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden bg-surface-container">
+            <img alt="User Pilot Avatar" data-alt="close-up 3d render of a futuristic cyber pilot avatar wearing a glowing neon visor and sleek chrome armor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATpbd59qTvWL9C-7-G5pVBJLY45WeToWxg6ljs1cTjVrpREdjx24kynVcjiaWZTarCQqDvn2eIWdCpbkhBsQfxmDy1uoH8ASDpJ-NLcmilmbdHaGUvHPKUn4b_WEUM3IDxUGB7IB0IdRKqKrADfu6xcUc73tNdImgRALFmzbcPmuFJHWIt1nTAkijJulY9pAC2KiTnnayM3wA2Qjj_xA2pI53gDOfePZJCYQLPwhlvfJ636hjaB593zmnlUaLHI5wXIWgJO9uFdH3y"/>
+          </div>
+          <div className="flex flex-col">
+            <h1 className="font-['Plus_Jakarta_Sans'] font-black uppercase tracking-tighter text-xl italic drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] text-blue-500">{username}</h1>
+            <span className={`text-[10px] font-black uppercase tracking-wider ${backendHealth === 'online' ? 'text-primary' : backendHealth === 'degraded' ? 'text-accent' : 'text-danger'}`}>
+              API {backendHealth === 'online' ? 'Online' : backendHealth === 'degraded' ? 'Degraded' : backendHealth === 'offline' ? 'Offline' : 'Checking'}
+            </span>
+          </div>
         </div>
-        <div className="league-badge" id="league-badge">
-          {isBootstrapping ? (
-            <span className="skeleton skeleton-pill skeleton-league" aria-label="Loading league" />
-          ) : (
-            <>
-              <span className="league-icon" id="league-icon">{currentLeague.icon}</span>
-              <span className="league-name" id="league-name">{currentLeague.name}</span>
-            </>
-          )}
+        <div className="flex items-center gap-2 bg-slate-900 border-2 border-black rounded-lg px-3 py-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+          <span className="material-symbols-outlined text-secondary-fixed" style={{ fontVariationSettings: "'FILL' 1" }}>diamond</span>
+          <span className="font-['Plus_Jakarta_Sans'] font-black uppercase tracking-tighter text-blue-500">
+            {isBootstrapping ? '...' : formatNumber(points)} PTS
+          </span>
         </div>
       </header>
 
@@ -1168,124 +1298,142 @@ function App() {
         </div>
       ) : null}
 
-      <section id="section-game" className={`section ${activeTab === 'game' ? 'active' : ''}`}>
-        <div className="main-container">
-          <div className="points-section">
-            <div className="points-number" id="points-display">
-              {isBootstrapping ? <span className="skeleton skeleton-number" aria-label="Loading points" /> : formatNumber(points)}
-            </div>
-            <div className="points-label">CYBER POINTS</div>
-          </div>
-
-          <div className="stats-row">
-            <div className="stat-item">
-              <span className="icon">⚡</span>
-              <span className="value" id="per-hour-display">
-                {isBootstrapping ? <span className="skeleton skeleton-line skeleton-line-sm" aria-label="Loading income" /> : formatNumber(pointsPerHour)}
-              </span>
-              <span className="label">/ hour</span>
-            </div>
-            <div className="stat-item">
-              <span className="icon">🖱️</span>
-              <span className="value" id="tap-power-display">
-                {isBootstrapping ? <span className="skeleton skeleton-line skeleton-line-sm" aria-label="Loading tap power" /> : `+${tapValue}`}
-              </span>
-              <span className="label">/ tap</span>
+      <section id="section-game" className={`${activeTab === 'game' ? 'block' : 'hidden'} pt-24 pb-32 px-4 max-w-md mx-auto flex flex-col gap-8 w-full`}>
+        {/* Stats Section */}
+        <section className="grid grid-cols-3 gap-3">
+          <div className="bg-surface-container border-2 border-black hard-shadow p-3 rounded-xl flex flex-col items-center">
+            <span className="text-[10px] font-black text-outline mb-1 uppercase">Gems</span>
+            <div className="flex items-center gap-1">
+              <span className="material-symbols-outlined text-secondary-fixed text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>diamond</span>
+              <span className="text-xl font-black text-secondary-fixed">{isBootstrapping ? '...' : formatNumber(points)}</span>
             </div>
           </div>
-
-          <div className="energy-section">
-            <div className="energy-bar-bg">
-              {isBootstrapping ? (
-                <div className="energy-bar-fill energy-bar-skeleton" aria-label="Loading energy" />
-              ) : (
-                <div className="energy-bar-fill" id="energy-bar" style={{ width: `${Math.max(0, Math.min(100, (energy / maxEnergy) * 100))}%` }} />
-              )}
-              <span className="energy-text">
-                {isBootstrapping ? <span className="skeleton skeleton-line skeleton-line-lg" aria-label="Loading energy values" /> : <><span id="energy-current">{Math.floor(energy)}</span> / <span id="energy-max">{maxEnergy}</span> ⚡</>}
-              </span>
+          <div className="bg-surface-container border-2 border-black hard-shadow p-3 rounded-xl flex flex-col items-center">
+            <span className="text-[10px] font-black text-outline mb-1 uppercase">Energy</span>
+            <div className="flex items-center gap-1">
+              <span className="material-symbols-outlined text-primary-container text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
+              <span className="text-xl font-black text-primary-container">{isBootstrapping ? '...' : Math.floor(energy)}</span>
             </div>
           </div>
-
-          <div className="tap-section">
-            <button className="lvl-up-btn" type="button" onClick={() => switchTab('shop')}>
-              LVL UP <span>»</span>
-            </button>
-
-            <div className="tap-rings">
-              <div className="ring ring-1" />
-              <div className="ring ring-2" />
-              <div className="ring ring-3" />
-              <div className="progress-arc" id="progress-arc" />
-
-              <button
-                className={`tap-button ${tapCritical ? 'critical' : ''}`}
-                id="tap-button"
-                type="button"
-                disabled={isBootstrapping}
-                onPointerDown={startTapping}
-                onPointerUp={stopTapping}
-                onPointerLeave={stopTapping}
-                onPointerCancel={stopTapping}
-                onContextMenu={(event) => event.preventDefault()}
-              >
-                {isBootstrapping ? (
-                  <>
-                    <span className="tap-icon tap-icon-loading">⏳</span>
-                    <span className="tap-value tap-value-loading">SYNC</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="tap-icon">💥</span>
-                    <span className="tap-value" id="tap-value-display">+{tapValue}</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            <div className="tap-status">
-              <div className="main-text" id="tap-status-text">{tapStatusText}</div>
-              <div className="sub-text">Hold for combo boost ⚡</div>
+          <div className="bg-surface-container border-2 border-black hard-shadow p-3 rounded-xl flex flex-col items-center">
+            <span className="text-[10px] font-black text-outline mb-1 uppercase">Income</span>
+            <div className="bg-tertiary-container text-white px-2 py-0.5 rounded border border-black text-[10px] font-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+              {isBootstrapping ? '...' : `+${formatNumber(pointsPerHour)}/h`}
             </div>
           </div>
-        </div>
+        </section>
+
+        {/* Central Tapping Mechanic */}
+        <section className="relative flex flex-col items-center justify-center py-12">
+          {/* Energy Bar Overlay */}
+          <div className="absolute -top-4 w-full px-8">
+            <div className="h-6 w-full bg-black rounded-full border-2 border-slate-700 overflow-hidden relative">
+              <div className="h-full bg-primary-container shadow-[0_0_15px_rgba(0,85,255,0.8)] relative transition-all duration-300" style={{ width: `${Math.max(0, Math.min(100, (energy / maxEnergy) * 100))}%` }}>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent w-1/4 animate-pulse"></div>
+              </div>
+              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-white drop-shadow-md">{Math.floor(energy)} / {maxEnergy} MAX</span>
+            </div>
+          </div>
+          {/* The Tap Core */}
+          <button 
+            className={`group relative active:scale-95 transition-transform duration-75 ${tapCritical ? 'critical' : ''}`}
+            disabled={isBootstrapping}
+            onPointerDown={startTapping}
+            onPointerUp={stopTapping}
+            onPointerLeave={stopTapping}
+            onPointerCancel={stopTapping}
+            onContextMenu={(event) => event.preventDefault()}
+          >
+            <div className="absolute inset-0 rounded-full bg-primary-container/20 blur-3xl animate-pulse"></div>
+            <div id="tap-core-glow" className="w-64 h-64 rounded-full bg-slate-900 border-[6px] border-black p-4 shadow-[0_12px_0_0_rgba(0,0,0,1)] tap-core-glow overflow-hidden flex items-center justify-center relative transition-all duration-75">
+              <div id="tap-core-inner" className="w-full h-full rounded-full bg-gradient-to-br from-primary-container to-blue-900 border-4 border-white/20 flex items-center justify-center relative overflow-hidden transition-colors duration-75">
+                <div className="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,white_10px,white_11px)]"></div>
+                <span id="tap-core-icon" className="material-symbols-outlined text-white text-9xl drop-shadow-2xl transition-all duration-75" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  ads_click
+                </span>
+                <div className="absolute inset-0 border-[12px] border-white/10 rounded-full scale-90"></div>
+              </div>
+            </div>
+          </button>
+          <div className="mt-8 text-center">
+            <p className="text-label-sm font-label-sm text-outline uppercase tracking-widest">+{tapValue} COINS / TAP</p>
+          </div>
+        </section>
+
+        {/* World Events & Daily Quests */}
+        <section className="flex flex-col gap-4">
+          <div className="bg-primary-container border-2 border-black rounded-2xl p-4 hard-shadow relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-2">
+              <span className="bg-black text-secondary-fixed text-[10px] font-black px-2 py-0.5 rounded-full border border-black">LIVE</span>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="bg-black/20 p-2 rounded-xl border border-white/10">
+                <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1" }}>public</span>
+              </div>
+              <div>
+                <h3 className="text-headline-md font-headline-md text-white">NEON STORM</h3>
+                <p className="text-body-md font-body-md text-blue-100/80">Multiplier increased to 2x for all taps in the next 14m</p>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-surface-container border-2 border-black rounded-2xl p-4 hard-shadow flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <span className="material-symbols-outlined text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>task_alt</span>
+                <span className="text-[10px] font-black text-outline">DAILY</span>
+              </div>
+              <div>
+                <h4 className="text-body-lg font-body-lg text-on-surface">5k Taps</h4>
+                <div className="h-2 w-full bg-black rounded-full mt-2 overflow-hidden">
+                  <div className="h-full bg-tertiary" style={{ width: `${Math.min(100, (todayTaps / 5000) * 100)}%` }}></div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-surface-container border-2 border-black rounded-2xl p-4 hard-shadow flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <span className="material-symbols-outlined text-secondary-fixed" style={{ fontVariationSettings: "'FILL' 1" }}>group</span>
+                <span className="text-[10px] font-black text-outline">SOCIAL</span>
+              </div>
+              <div>
+                <h4 className="text-body-lg font-body-lg text-on-surface">Invite 3</h4>
+                <div className="h-2 w-full bg-black rounded-full mt-2 overflow-hidden">
+                  <div className="h-full bg-secondary-fixed" style={{ width: `${Math.min(100, (referralCount / 3) * 100)}%` }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </section>
 
-      <section id="section-shop" className={`section ${activeTab === 'shop' ? 'active' : ''}`}>
-        <div className="main-container">
-          <div className="section-header">
-            <span className="section-title">🛒 Upgrades</span>
+      <section id="section-shop" className={`${activeTab === 'shop' ? 'block' : 'hidden'} max-w-md mx-auto px-6 pt-24 pb-32 space-y-8 w-full`}>
+        <section className="relative w-full h-48 rounded-[32px] overflow-hidden border-4 border-primary-container hard-shadow">
+          <img className="w-full h-full object-cover" alt="promotion" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAN---l2L8Z3SPd33BWDKBs8bVHVqfuj0uEcjUCa3PJ-7weicVqTUVagh9un2Evujwn2C_p7JvgMmn1Or_4YoBY71vbIH0NVpkTllLCBUokd5mQsTZuUtQr8LzME5NUPYC944IJxYQpkycvZx2SQXfdyWcgwBaThNfEl4n8r6PX-sOU0Q03HMMamDP2PlEzEvFNi8b2m6LBvic11kd72TftSFNuFzb-5-MSivxRB0EcLIHEQpF-LoGqgw-WpCycDDfytCbm0yK1v4Su" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
+            <span className="bg-error text-on-error w-fit px-3 py-1 rounded-full text-xs font-black mb-2 uppercase italic">Limited Time!</span>
+            <h2 className="text-2xl font-black text-white uppercase italic">Mythic Dragon Skin</h2>
+            <p className="text-primary font-bold">Only 24 hours left!</p>
           </div>
+        </section>
 
-          <div className="shop-tabs">
-            <button className={`shop-tab ${currentShopCategory === 'tap' ? 'active' : ''}`} type="button" onClick={() => switchShopCategory('tap')}>
-              <span className="shop-tab-icon">🖱️</span>
-              <span>Tap</span>
-            </button>
-            <button className={`shop-tab ${currentShopCategory === 'passive' ? 'active' : ''}`} type="button" onClick={() => switchShopCategory('passive')}>
-              <span className="shop-tab-icon">⚡</span>
-              <span>Passive</span>
-            </button>
-            <button className={`shop-tab ${currentShopCategory === 'special' ? 'active' : ''}`} type="button" onClick={() => switchShopCategory('special')}>
-              <span className="shop-tab-icon">✨</span>
-              <span>Special</span>
-            </button>
-          </div>
+        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+          <button className={`${currentShopCategory === 'tap' ? 'bg-[#FFD200] text-slate-900 border-on-primary-container shadow-lg' : 'bg-surface-container-high text-on-surface-variant border-black/20 hover:bg-surface-container-highest'} px-6 py-3 rounded-2xl font-black text-xs flex-shrink-0 border-b-4 transition-colors flex items-center gap-2`} onClick={() => switchShopCategory('tap')}>
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>touch_app</span>
+            TAP
+          </button>
+          <button className={`${currentShopCategory === 'passive' ? 'bg-[#FFD200] text-slate-900 border-on-primary-container shadow-lg' : 'bg-surface-container-high text-on-surface-variant border-black/20 hover:bg-surface-container-highest'} px-6 py-3 rounded-2xl font-black text-xs flex-shrink-0 border-b-4 transition-colors flex items-center gap-2`} onClick={() => switchShopCategory('passive')}>
+            <span className="material-symbols-outlined">bolt</span>
+            PASSIVE
+          </button>
+          <button className={`${currentShopCategory === 'special' ? 'bg-[#FFD200] text-slate-900 border-on-primary-container shadow-lg' : 'bg-surface-container-high text-on-surface-variant border-black/20 hover:bg-surface-container-highest'} px-6 py-3 rounded-2xl font-black text-xs flex-shrink-0 border-b-4 transition-colors flex items-center gap-2`} onClick={() => switchShopCategory('special')}>
+            <span className="material-symbols-outlined">stars</span>
+            SPECIAL
+          </button>
+        </div>
 
-          <div id="upgrades-list">
-            {isBootstrapping
-              ? Array.from({ length: 4 }, (_, index) => index).map((index) => (
-                <article key={`shop-skeleton-${index}`} className="upgrade-card skeleton-card">
-                  <div className="upgrade-icon-box skeleton-circle" />
-                  <div className="upgrade-info">
-                    <div className="skeleton skeleton-line skeleton-line-md" />
-                    <div className="skeleton skeleton-line skeleton-line-sm" />
-                    <div className="skeleton skeleton-line skeleton-line-xs" />
-                  </div>
-                  <div className="upgrade-buy-btn skeleton-button" />
-                </article>
-              ))
-              : currentUpgrades.map((upgrade) => {
+        <div className="grid grid-cols-2 gap-4">
+          {isBootstrapping ? (
+            <div className="col-span-2 text-center text-white">Loading...</div>
+          ) : currentUpgrades.map((upgrade) => {
               const level = Number(upgradeLevels[upgrade.id]) || 0;
               const cost = Math.floor(upgrade.baseCost * Math.pow(upgrade.costMult, level));
               const isMaxed = level >= upgrade.maxLevel;
@@ -1293,356 +1441,390 @@ function App() {
               const locked = !isUpgradeUnlocked(upgrade, referralCount, streak);
 
               return (
-                <article key={upgrade.id} className={`upgrade-card ${locked ? 'locked' : ''}`}>
-                  <div className="upgrade-icon-box">{upgrade.icon}</div>
-                  <div className="upgrade-info">
-                    <div className="upgrade-name">{upgrade.name}</div>
-                    <div className="upgrade-effect">{getUpgradeEffectText(upgrade)}</div>
-                    <div className="upgrade-level">
-                      Level {level}/{upgrade.maxLevel}
-                      {locked ? ` Requires: ${upgrade.requires}` : ''}
+                <div key={upgrade.id} className="bg-surface-container-low border-4 border-surface-container-highest rounded-[24px] p-4 flex flex-col items-center text-center relative hard-shadow">
+                  {locked && <div className="absolute inset-0 bg-black/60 rounded-[20px] z-20 flex items-center justify-center"><span className="material-symbols-outlined text-4xl text-white">lock</span></div>}
+                  {upgrade.popular && !locked && (
+                    <div className="absolute -top-2 -right-2 bg-secondary text-on-secondary px-2 py-1 rounded-lg text-[10px] font-black italic transform rotate-12 z-10 border-2 border-surface-container-highest">
+                      POPULAR
                     </div>
+                  )}
+                  <div className="w-full h-24 bg-surface-container-highest rounded-xl mb-4 flex items-center justify-center relative overflow-hidden text-5xl">
+                    {upgrade.icon}
                   </div>
-                  <button
-                    className="upgrade-buy-btn"
-                    type="button"
+                  <h3 className="font-black text-xs text-on-surface mb-1 uppercase">{upgrade.name}</h3>
+                  <p className="text-[10px] text-on-surface-variant mb-4 uppercase h-6 line-clamp-2">{getUpgradeEffectText(upgrade)}</p>
+                  
+                  <button 
                     disabled={!canAfford || isMaxed || locked}
                     onClick={() => buyUpgrade(upgrade.id)}
+                    className={`w-full py-3 rounded-xl font-black text-xs relative overflow-hidden ${isMaxed ? 'bg-slate-700 text-slate-400 border-b-4 border-slate-900 cursor-not-allowed' : canAfford ? 'bg-[#FFD200] text-slate-900 shadow-[0_4px_0_#b29300] active:translate-y-1 active:shadow-none' : 'bg-surface-container-highest text-slate-500 border-b-4 border-slate-900'}`}
                   >
-                    <span className="upgrade-cost">{isMaxed ? 'MAX' : locked ? 'LOCKED' : `💰 ${formatNumber(cost)}`}</span>
-                    <span className="upgrade-buy-text">{isMaxed ? 'MAX' : locked ? 'Locked' : 'Buy'}</span>
+                    <span className="relative z-10 flex items-center justify-center gap-1">
+                      {isMaxed ? 'MAX LEVEL' : locked ? 'LOCKED' : <>{formatNumber(cost)} <span className="text-[14px]">💎</span></>}
+                    </span>
                   </button>
-                </article>
+                </div>
               );
-              })}
-          </div>
+          })}
         </div>
       </section>
 
-      <section id="section-top" className={`section ${activeTab === 'top' ? 'active' : ''}`}>
-        <div className="main-container">
-          <div className="section-header">
-            <span className="section-title">🏆 Leaderboard</span>
-          </div>
-
-          <div className="leaderboard-tabs">
-            <button className={`leaderboard-tab ${currentLeaderboardType === 'global' ? 'active' : ''}`} type="button" onClick={() => switchLeaderboardType('global')}>
-              🌐 Global
-            </button>
-            <button className={`leaderboard-tab ${currentLeaderboardType === 'weekly' ? 'active' : ''}`} type="button" onClick={() => switchLeaderboardType('weekly')}>
-              📅 Weekly
-            </button>
-          </div>
-
-          <div id="leaderboard-list">
-            {(isBootstrapping || (leaderboardLoading && leaderboard.length === 0)
-              ? Array.from({ length: 5 }, (_, index) => ({ id: `leaderboard-skeleton-${index}`, index }))
-              : leaderboard.slice(0, 20).map((player, index) => ({ ...player, index })))
-              .map((player, index) => {
-              if (isBootstrapping || (leaderboardLoading && leaderboard.length === 0)) {
-                return (
-                  <article key={`leaderboard-skeleton-${index}`} className="leaderboard-item skeleton-card">
-                    <span className="lb-rank"><span className="skeleton skeleton-circle skeleton-mini" /></span>
-                    <div className="lb-info">
-                      <div className="skeleton skeleton-line skeleton-line-md" />
-                      <div className="skeleton skeleton-line skeleton-line-sm" />
-                    </div>
-                    <span className="lb-points"><span className="skeleton skeleton-line skeleton-line-sm" /></span>
-                  </article>
-                );
-              }
-
-              const league = getLeague(Number(player.total_points || player.points) || 0);
-              const rankClass = index < 3 ? `top-${index + 1}` : '';
-              const rankLabel = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}`;
-
+      <section id="section-top" className={`${activeTab === 'top' ? 'block' : 'hidden'} max-w-md mx-auto px-6 pt-24 pb-32 w-full`}>
+        <section className="mt-8 mb-12">
+          <h2 className="text-3xl font-black text-center mb-8 text-primary drop-shadow-[0_4px_0_rgba(0,0,0,0.5)]">TOP PLAYERS</h2>
+          <div className="flex items-end justify-center gap-2 h-64">
+            {(() => {
+              if (isBootstrapping || leaderboard.length < 3) return <div className="text-white text-center w-full">Loading...</div>;
+              const top3 = [...leaderboard]
+                .sort((a, b) => (Number(b.total_points || b.points || 0)) - (Number(a.total_points || a.points || 0)))
+                .slice(0, 3);
+              const p1 = top3[0]; const p2 = top3[1]; const p3 = top3[2];
               return (
-                <article key={`${player.telegram_id || player.username || index}-${index}`} className={`leaderboard-item ${rankClass}`}>
-                  <span className="lb-rank">{rankLabel}</span>
-                  <div className="lb-info">
-                    <div className="lb-name">{player.first_name || player.username || 'Anonymous'}</div>
-                    <div className="lb-league">{league.icon} {league.name}</div>
-                  </div>
-                  <span className="lb-points">{formatNumber(player.points)} pts</span>
-                </article>
-              );
-            })}
+                <>
+                  {/* Rank 2 (Left) */}
+                  {p2 && (
+                    <div className="flex flex-col items-center w-1/3">
+                      <div className="relative mb-2">
+                        <div className="w-16 h-16 rounded-full border-4 border-slate-300 overflow-hidden bg-slate-800 p-1 flex items-center justify-center text-2xl font-black text-slate-300">
+                          {p2.first_name?.[0] || 'A'}
+                        </div>
+                        <div className="absolute -top-2 -right-2 bg-slate-300 text-slate-900 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center font-black">2</div>
+                      </div>
+                      <div className="w-full bg-slate-400 h-24 rounded-t-2xl border-x-4 border-t-4 border-slate-500 relative overflow-hidden flex flex-col items-center justify-center shadow-[0_8px_0_rgba(0,0,0,0.3)]">
+                        <span className="font-black text-slate-900 truncate w-full text-center px-1 text-xs">{p2.first_name || p2.username || 'Anon'}</span>
+                        <span className="text-[10px] font-bold text-slate-800">{formatNumber(p2.total_points || p2.points)}</span>
+                      </div>
+                    </div>
+                  )}
+                  {/* Rank 1 (Middle) */}
+                  {p1 && (
+                    <div className="flex flex-col items-center w-1/3 animate-bounce-slow">
+                      <div className="relative mb-2">
+                        <div className="w-20 h-20 rounded-full border-4 border-[#FFD200] overflow-hidden bg-slate-900 p-1 shadow-[0_0_20px_rgba(255,210,0,0.4)] flex items-center justify-center text-3xl font-black text-[#FFD200]">
+                          {p1.first_name?.[0] || 'A'}
+                        </div>
+                        <div className="absolute -top-3 -right-2 bg-[#FFD200] text-slate-950 w-10 h-10 rounded-full border-2 border-white flex items-center justify-center font-black animate-pulse">1</div>
+                      </div>
+                      <div className="w-full bg-[#FFD200] h-32 rounded-t-2xl border-x-4 border-t-4 border-[#b29300] relative overflow-hidden flex flex-col items-center justify-center shadow-[0_12px_0_rgba(0,0,0,0.3)]">
+                        <span className="font-black text-slate-950 uppercase truncate w-full text-center px-1 text-sm">{p1.first_name || p1.username || 'Anon'}</span>
+                        <span className="text-[10px] font-black text-slate-800">{formatNumber(p1.total_points || p1.points)}</span>
+                      </div>
+                    </div>
+                  )}
+                  {/* Rank 3 (Right) */}
+                  {p3 && (
+                    <div className="flex flex-col items-center w-1/3">
+                      <div className="relative mb-2">
+                        <div className="w-16 h-16 rounded-full border-4 border-orange-700 overflow-hidden bg-orange-950 p-1 flex items-center justify-center text-2xl font-black text-orange-400">
+                          {p3.first_name?.[0] || 'A'}
+                        </div>
+                        <div className="absolute -top-2 -right-2 bg-orange-700 text-white w-8 h-8 rounded-full border-2 border-white flex items-center justify-center font-black">3</div>
+                      </div>
+                      <div className="w-full bg-orange-800 h-20 rounded-t-2xl border-x-4 border-t-4 border-orange-950 relative overflow-hidden flex flex-col items-center justify-center shadow-[0_8px_0_rgba(0,0,0,0.3)]">
+                        <span className="font-black text-orange-100 drop-shadow-md truncate w-full text-center px-1 text-xs">{p3.first_name || p3.username || 'Anon'}</span>
+                        <span className="text-[10px] font-bold text-orange-200">{formatNumber(p3.total_points || p3.points)}</span>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )
+            })()}
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <div className="flex justify-between px-6 py-2 bg-surface-container-high rounded-xl border-2 border-surface-container-highest">
+            <span className="text-xs font-bold text-on-surface-variant">RANK & PLAYER</span>
+            <span className="text-xs font-bold text-on-surface-variant">SCORE</span>
           </div>
 
-          <div className="user-rank-card" id="user-rank-card">
-            {isBootstrapping ? (
-              <>
-                <span className="lb-rank"><span className="skeleton skeleton-circle skeleton-mini" /></span>
-                <div className="lb-info">
-                  <div className="skeleton skeleton-line skeleton-line-md" />
-                  <div className="skeleton skeleton-line skeleton-line-sm" />
+          {!isBootstrapping && leaderboard.slice(3, 20).map((player, idx) => {
+            const index = idx + 3;
+            const league = getLeague(Number(player.total_points || player.points) || 0);
+            return (
+              <div key={index} className="flex items-center gap-4 bg-slate-900 p-4 rounded-2xl border-b-4 border-slate-950 hover:translate-y-[-2px] transition-transform">
+                <span className="font-black text-slate-500 w-8">{index + 1}</span>
+                <div className="w-12 h-12 rounded-full border-2 border-slate-700 overflow-hidden flex items-center justify-center bg-slate-800 text-white font-bold">
+                  {player.first_name?.[0] || player.username?.[0] || '?'}
                 </div>
-                <span className="lb-points"><span className="skeleton skeleton-line skeleton-line-sm" /></span>
-              </>
-            ) : (
-              <>
-                <span className="lb-rank" id="user-rank">{userRank}</span>
-                <div className="lb-info">
-                  <div className="lb-name" id="user-rank-name">{username}</div>
-                  <div className="lb-league" id="user-rank-league">{userRankLeague.icon} {userRankLeague.name}</div>
+                <div className="flex-1 overflow-hidden">
+                  <p className="font-black text-white truncate">{player.first_name || player.username || 'Anonymous'}</p>
+                  <p className="text-xs text-slate-400">{league.icon} {league.name}</p>
                 </div>
-                <span className="lb-points" id="user-rank-points">{userRankPoints}</span>
-              </>
-            )}
-          </div>
-        </div>
+                <div className="text-right">
+                  <p className="font-black text-[#FFD200]">{formatNumber(player.points)}</p>
+                </div>
+              </div>
+            );
+          })}
+
+          {!isBootstrapping && (
+            <div className="flex items-center gap-4 bg-[#6e208c] p-4 rounded-2xl border-b-4 border-[#320046] shadow-[0_0_15px_rgba(110,32,140,0.5)] mt-4">
+              <span className="font-black text-secondary w-8">{userRank.replace('#','')}</span>
+              <div className="w-12 h-12 rounded-full border-2 border-secondary overflow-hidden bg-slate-900 flex items-center justify-center text-white font-bold">
+                {username?.[0] || 'U'}
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <p className="font-black text-white truncate">YOU</p>
+                <p className="text-xs text-secondary">{userRankLeague.icon} {userRankLeague.name}</p>
+              </div>
+              <div className="text-right">
+                <p className="font-black text-[#FFD200]">{userRankPoints}</p>
+              </div>
+            </div>
+          )}
+        </section>
       </section>
 
-      <section id="section-daily" className={`section ${activeTab === 'daily' ? 'active' : ''}`}>
-        <div className="main-container">
-          <div className="daily-card">
-            <div className="daily-card-header">
-              <span className="daily-card-icon">🎁</span>
-              <span className="daily-card-title">Daily Reward</span>
+      <section id="section-daily" className={`${activeTab === 'daily' ? 'block' : 'hidden'} max-w-md mx-auto px-6 pt-24 pb-32 w-full`}>
+        <section className="mb-12 flex flex-col items-center">
+          <div className="flex gap-4 mb-8 w-full justify-center px-4">
+            <div className="flex-1 relative">
+              <div className="w-full h-24 bg-primary-container rounded-2xl border-4 border-black hard-shadow flex flex-col items-center justify-center rotate-2">
+                <span className="text-black text-[10px] font-black uppercase opacity-80">STREAK</span>
+                <span className="text-black text-4xl font-black -mt-1">{streak}</span>
+              </div>
+              <div className="absolute -bottom-2 -right-2 bg-secondary-fixed text-black px-2 py-0.5 rounded border-2 border-black text-[10px] font-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+                DAYS
+              </div>
             </div>
-
-            <div className="streak-display">
-              <span className="streak-label">Current Streak:</span>
-              <span className="streak-value" id="streak-count">{isBootstrapping ? <span className="skeleton skeleton-line skeleton-line-sm" aria-label="Loading streak" /> : streak}</span>
-              <span className="streak-icon">⚡</span>
+            <div className="flex-1 relative">
+               <div className="w-full h-24 bg-[#FFD200] rounded-2xl border-4 border-black hard-shadow flex flex-col items-center justify-center -rotate-2">
+                 <span className="text-black text-[10px] font-black uppercase opacity-80">BONUS</span>
+                 <span className="text-black text-4xl font-black -mt-1">{boostActive ? '2X' : '1X'}</span>
+               </div>
+               <div className="absolute -bottom-2 -right-2 bg-white text-black px-2 py-0.5 rounded border-2 border-black text-[10px] font-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+                MULTIPLIER
+              </div>
             </div>
-
-            <button className="claim-btn" id="claim-daily-btn" type="button" disabled={isBootstrapping || dailyClaimed} onClick={claimDailyReward}>
-              <span>🎁</span>
-              <span>{claimDailyButtonLabel}</span>
-            </button>
           </div>
 
-          <div className="daily-card">
-            <div className="daily-card-header">
-              <span className="daily-card-icon">🎡</span>
-              <span className="daily-card-title">Lucky Wheel</span>
+          <div className="relative w-64 h-64 mx-auto mb-4">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
+              <div className="w-8 h-8 bg-white border-4 border-black rotate-45 hard-shadow flex items-center justify-center"></div>
             </div>
-
-            <div className="wheel-container">
-              <div className="wheel" id="wheel" style={{ transform: `rotate(${wheelRotation}deg)` }} />
-              <div className="wheel-pointer">▼</div>
-              <div className="wheel-center">SPIN</div>
+            <div 
+              className="w-full h-full rounded-full border-8 border-black overflow-hidden relative hard-shadow bg-slate-900"
+              style={{ 
+                transform: `rotate(${wheelRotation}deg)`, 
+                transitionDuration: wheelSpinning ? '4.5s' : '0s',
+                transitionTimingFunction: 'cubic-bezier(0.1, 0.7, 0.1, 1)' 
+              }}
+            >
+              <div 
+                className="absolute inset-0"
+                style={{
+                  background: `conic-gradient(${WHEEL_SEGMENTS.map((s, i) => `${s.color} ${i * 36}deg ${(i + 1) * 36}deg`).join(', ')})`
+                }}
+              ></div>
+              {WHEEL_SEGMENTS.map((_, i) => (
+                <div 
+                  key={`line-${i}`}
+                  className="absolute top-0 left-1/2 w-[4px] h-1/2 bg-black origin-bottom -translate-x-1/2"
+                  style={{ transform: `rotate(${i * 36}deg)` }}
+                ></div>
+              ))}
+              {WHEEL_SEGMENTS.map((segment, index) => {
+                const rotation = index * 36 + 18;
+                return (
+                  <div 
+                    key={`label-${index}`}
+                    className="absolute inset-0 origin-center pointer-events-none"
+                    style={{ transform: `rotate(${rotation}deg)` }}
+                  >
+                    <div className="absolute top-[8px] left-1/2 -translate-x-1/2 h-1/2 flex items-start justify-center pt-2">
+                      <span 
+                        className="block font-black text-black text-[12px] uppercase tracking-tighter shadow-sm" 
+                        style={{ 
+                           writingMode: 'vertical-rl',
+                           textOrientation: 'mixed',
+                           textShadow: '1px 1px 0px rgba(255,255,255,0.7)'
+                        }}
+                      >
+                        {segment.label}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+              <div className="absolute inset-0 m-auto w-12 h-12 bg-surface-container border-4 border-black rounded-full flex items-center justify-center z-10 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+                <span className="text-xl">🎡</span>
+              </div>
             </div>
+          </div>
+          
+          <div className="w-full flex gap-4 mt-4">
+             <button disabled={isBootstrapping || dailyClaimed} onClick={claimDailyReward} className="flex-1 bg-secondary-fixed text-black font-black py-4 rounded-2xl border-4 border-black hard-shadow active:translate-y-1 active:shadow-none flex items-center justify-center gap-2">
+                <span>🎁</span> {claimDailyButtonLabel}
+             </button>
+             <button disabled={isBootstrapping || wheelSpinning || wheelSpunToday} onClick={spinWheel} className="flex-1 bg-slate-800 text-white font-black py-4 rounded-2xl border-4 border-black hard-shadow active:translate-y-1 active:shadow-none flex items-center justify-center gap-2">
+                <span>🎡</span> {spinButtonLabel}
+             </button>
+          </div>
+        </section>
 
-            <button className="spin-btn" id="spin-btn" type="button" disabled={isBootstrapping || wheelSpinning || wheelSpunToday} onClick={spinWheel}>
-              <span>🎡</span>
-              <span>{spinButtonLabel}</span>
-            </button>
+        <section className="relative mt-12">
+          <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-3 bg-black/40 rounded-full"></div>
+          <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-1 bg-primary-container/20"></div>
+          
+          <div className="flex justify-center mb-8 relative z-10">
+            <div className="bg-surface-container-high border-2 border-black rounded-xl p-1 flex">
+              <button className={`px-6 py-2 rounded-lg font-black text-sm ${currentMissionType === 'daily' ? 'bg-primary-container text-white border-2 border-black' : 'text-on-surface-variant'}`} onClick={() => switchMissionType('daily')}>Daily</button>
+              <button className={`px-6 py-2 rounded-lg font-black text-sm ${currentMissionType === 'weekly' ? 'bg-primary-container text-white border-2 border-black' : 'text-on-surface-variant'}`} onClick={() => switchMissionType('weekly')}>Weekly</button>
+            </div>
           </div>
 
-          <div className="daily-card">
-            <div className="daily-card-header">
-              <span className="daily-card-icon">📋</span>
-              <span className="daily-card-title">Missions</span>
-            </div>
-
-            <div className="mission-tabs">
-              <button className={`mission-tab ${currentMissionType === 'daily' ? 'active' : ''}`} type="button" onClick={() => switchMissionType('daily')}>Daily</button>
-              <button className={`mission-tab ${currentMissionType === 'weekly' ? 'active' : ''}`} type="button" onClick={() => switchMissionType('weekly')}>Weekly</button>
-            </div>
-
-            <div id="missions-list">
-              {isBootstrapping
-                ? Array.from({ length: 4 }, (_, index) => index).map((index) => (
-                  <article key={`mission-skeleton-${index}`} className="mission-card skeleton-card">
-                    <div className="mission-icon skeleton-circle" />
-                    <div className="mission-info">
-                      <div className="skeleton skeleton-line skeleton-line-md" />
-                      <div className="skeleton skeleton-line skeleton-line-sm" />
-                      <div className="mission-progress"><div className="mission-progress-fill skeleton-progress" /></div>
-                      <div className="skeleton skeleton-line skeleton-line-xs" />
-                    </div>
-                    <div className="mission-reward">
-                      <div className="skeleton skeleton-line skeleton-line-sm" />
-                      <div className="skeleton skeleton-line skeleton-line-xs" />
-                    </div>
-                  </article>
-                ))
-                : currentMissions.map((mission) => {
+          <div className="space-y-16 relative">
+             {currentMissions.map((mission, index) => {
                 const progress = getMissionProgress(mission, { todayTaps, todayUpgrades, todayCollections, wheelSpunToday, streak, referralCount });
                 const completed = progress >= mission.target;
-                const progressPercent = Math.min((progress / mission.target) * 100, 100);
-
+                
                 return (
-                  <article key={mission.id} className={`mission-card ${completed ? 'completed' : ''}`}>
-                    <div className="mission-icon">{mission.icon}</div>
-                    <div className="mission-info">
-                      <div className="mission-name">{mission.name}</div>
-                      <div className="mission-desc">{mission.desc}</div>
-                      <div className="mission-progress">
-                        <div className="mission-progress-fill" style={{ width: `${progressPercent}%` }} />
-                      </div>
-                      <div style={{ fontSize: '10px', color: '#8892a0', marginTop: '3px' }}>
-                        {formatNumber(progress)} / {formatNumber(mission.target)}
+                  <div key={mission.id} className={`flex items-center justify-center gap-6 ${completed ? 'opacity-50' : ''}`}>
+                    <div className="w-1/2 text-right">
+                      <h3 className={`text-xl font-black ${completed ? 'text-on-surface' : 'text-white'}`}>{mission.name}</h3>
+                      <p className={`text-xs font-bold ${completed ? 'text-secondary-fixed' : 'text-primary'}`}>{completed ? 'COMPLETED' : 'IN PROGRESS'}</p>
+                    </div>
+                    <div className="z-10 relative">
+                      {!completed && <div className="absolute inset-0 bg-primary-container blur-xl opacity-30 animate-pulse"></div>}
+                      <div className={`w-16 h-16 border-4 border-black rounded-[2rem] flex items-center justify-center ${completed ? 'bg-slate-800 text-slate-500' : 'bg-primary-container text-white rotate-[-4deg] hard-shadow'}`}>
+                        {completed ? <span className="material-symbols-outlined text-4xl">check_circle</span> : <span className="text-3xl">{mission.icon}</span>}
                       </div>
                     </div>
-                    <div className="mission-reward">
-                      <div className="mission-reward-value">{completed ? '✅' : `+${formatNumber(mission.reward)}`}</div>
-                      <div className="mission-reward-label">pts</div>
+                    <div className="w-1/2">
+                      <div className={`p-3 rounded-xl border-2 border-black ${completed ? 'bg-surface-container-low' : 'bg-slate-900 hard-shadow'}`}>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <span className="material-symbols-outlined text-secondary-fixed text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>diamond</span>
+                            <span className="font-bold text-sm text-white">+{formatNumber(mission.reward)}</span>
+                          </div>
+                          <div className="text-xs text-slate-400">{formatNumber(progress)} / {formatNumber(mission.target)}</div>
+                        </div>
+                      </div>
                     </div>
-                  </article>
+                  </div>
                 );
-                })}
+             })}
+          </div>
+        </section>
+      </section>
+
+      <section id="section-profile" className={`${activeTab === 'profile' ? 'block' : 'hidden'} max-w-md mx-auto px-6 pt-24 pb-32 space-y-8 w-full`}>
+        <section className="flex flex-col items-center text-center space-y-4">
+          <div className="relative">
+            <div className="w-32 h-32 rounded-3xl border-4 border-black bg-primary-container hard-shadow overflow-hidden flex items-center justify-center">
+              <div className="w-full h-full bg-slate-800 flex items-center justify-center text-5xl font-black text-white uppercase italic">
+                {username?.[0] || 'U'}
+              </div>
+            </div>
+            <div className="absolute -bottom-2 -right-2 bg-secondary-fixed border-2 border-black px-2 py-1 rounded-md hard-shadow">
+              <span className="text-black font-bold text-xs uppercase">LVL {Math.floor(Math.log2(Math.max(1, totalPoints/1000)) + 1)}</span>
             </div>
           </div>
+          <div>
+            <h1 className="text-3xl font-black text-primary drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">{username}</h1>
+            <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">Elite Tapper Status</p>
+          </div>
+        </section>
 
-          <div className="daily-card">
-            <div className="daily-card-header">
-              <span className="daily-card-icon">👥</span>
-              <span className="daily-card-title">Invite Friends</span>
-            </div>
-
-            <div className="referral-stats">
-              <div className="referral-stat">
-                <div className="referral-stat-value" id="referral-count">{isBootstrapping ? <span className="skeleton skeleton-line skeleton-line-sm" aria-label="Loading referrals" /> : referralCount}</div>
-                <div className="referral-stat-label">Friends Invited</div>
-              </div>
-              <div className="referral-stat">
-                <div className="referral-stat-value">+500</div>
-                <div className="referral-stat-label">Per Invite</div>
-              </div>
-              <div className="referral-stat">
-                <div className="referral-stat-value">5%</div>
-                <div className="referral-stat-label">Earnings</div>
-              </div>
-            </div>
-
-            <div className="referral-link-box">
-              <div className="referral-link-label">Your Referral Link:</div>
-              <div className="referral-link" id="referral-link">{isBootstrapping ? <span className="skeleton skeleton-line skeleton-line-lg" aria-label="Loading referral link" /> : referralLink}</div>
-              <button className="copy-btn" id="copy-btn" type="button" disabled={isBootstrapping} onClick={copyReferralLink}>
-                <span>🔗</span>
-                <span>{copyLabel}</span>
-              </button>
-            </div>
-
-            <div className="milestones-title">🏅 Milestones</div>
-            <div id="milestones-list">
-              {REFERRAL_MILESTONES.map((milestone) => {
-                const achieved = referralCount >= milestone.count;
-                return (
-                  <article key={milestone.count} className={`milestone-item ${achieved ? 'achieved' : ''}`}>
-                    <span className="milestone-icon">{milestone.icon}</span>
-                    <div className="milestone-info">
-                      <div className="milestone-count">{achieved ? '✅' : '🔒'} {milestone.count} friends</div>
-                      <div className="milestone-bonus">{milestone.bonus || 'Points bonus'}</div>
-                    </div>
-                    <span className="milestone-reward">+{formatNumber(milestone.reward)}</span>
-                  </article>
-                );
-              })}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-surface-container border-2 border-black rounded-2xl p-4 hard-shadow flex flex-col justify-between h-32">
+            <span className="text-slate-400 text-[10px] font-black uppercase">Total Taps</span>
+            <div className="flex flex-col">
+              <span className="text-2xl font-black text-primary leading-none whitespace-nowrap">{formatNumber(totalPoints)}</span>
+              <span className="text-[10px] text-primary/50 font-bold">+{formatNumber(todayTaps)} today</span>
             </div>
           </div>
-
-          <div className="daily-card">
-            <div className="daily-card-header">
-              <span className="daily-card-icon">⛓️</span>
-              <span className="daily-card-title">Solana Wallet</span>
-            </div>
-
-            <div className="wallet-panel">
-              <div className={`wallet-status-pill ${walletLinked ? 'linked' : walletAddress ? 'connected' : 'idle'}`}>
-                {walletStatusLabel}
+          <div className="bg-surface-container border-2 border-black rounded-2xl p-4 hard-shadow flex flex-col justify-between h-32">
+            <span className="text-slate-400 text-[10px] font-black uppercase">Earnings</span>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1">
+                <span className="material-symbols-outlined text-secondary-fixed text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>diamond</span>
+                <span className="text-2xl font-black text-secondary-fixed leading-none whitespace-nowrap">{(revenueEarnedLamports / 1e9).toFixed(3)} SOL</span>
               </div>
-
-              <div className="wallet-address-box">
-                <div className="wallet-address-label">Wallet Address</div>
-                <div className="wallet-address-value">{walletAddress ? shortenAddress(walletAddress) : 'Not linked yet'}</div>
-              </div>
-
-              {(walletManualMode || (!window.solana?.isPhantom && !window.solana?.isSolflare)) ? (
-                <div className="wallet-manual-box">
-                  <div className="wallet-manual-title">Manual link</div>
-                  <div className="wallet-manual-note">
-                    Use your wallet app to sign the challenge, then paste the address and signature here.
-                  </div>
-                  <input
-                    className="wallet-input"
-                    type="text"
-                    value={walletManualAddress}
-                    onChange={(event) => setWalletManualAddress(event.target.value)}
-                    placeholder="Wallet address"
-                    autoComplete="off"
-                    spellCheck="false"
-                  />
-                  <textarea
-                    className="wallet-input wallet-signature"
-                    value={walletManualSignature}
-                    onChange={(event) => setWalletManualSignature(event.target.value)}
-                    placeholder="Signature"
-                    rows={3}
-                    spellCheck="false"
-                  />
-                  <textarea
-                    className="wallet-input wallet-challenge"
-                    value={walletLinkChallenge || 'Click Connect or Link to generate a challenge.'}
-                    readOnly
-                    rows={4}
-                  />
-                  <div className="wallet-manual-actions">
-                    <button className="wallet-btn connect" type="button" disabled={walletLinking || walletClaiming} onClick={prepareWalletLinkChallenge}>
-                      Get Challenge
-                    </button>
-                    <button className="wallet-btn link" type="button" disabled={walletLinking || walletClaiming} onClick={linkSolanaWallet}>
-                      Verify Manual Link
-                    </button>
-                  </div>
-                  {walletLinkChallengeExpiresAt > 0 ? <div className="wallet-note">Challenge expires at {new Date(walletLinkChallengeExpiresAt).toLocaleTimeString()}</div> : null}
-                </div>
-              ) : null}
-
-              <div className="wallet-metrics">
-                <div className="wallet-metric">
-                  <span className="wallet-metric-label">Earned</span>
-                  <span className="wallet-metric-value">{formatSol(revenueEarnedLamports)}</span>
-                </div>
-                <div className="wallet-metric">
-                  <span className="wallet-metric-label">Claimed</span>
-                  <span className="wallet-metric-value">{formatSol(revenueClaimedLamports)}</span>
-                </div>
-                <div className="wallet-metric">
-                  <span className="wallet-metric-label">Claimable</span>
-                  <span className="wallet-metric-value accent">{formatSol(walletClaimableLamports)}</span>
-                </div>
-              </div>
-
-              <div className="wallet-actions">
-                <button className="wallet-btn connect" type="button" disabled={walletLinking || walletClaiming} onClick={connectSolanaWallet}>
-                  {walletAddress ? 'Reconnect' : (window.solana?.isPhantom || window.solana?.isSolflare) ? 'Connect' : 'Open Manual Link'}
-                </button>
-                <button className="wallet-btn link" type="button" disabled={walletLinking || walletClaiming} onClick={linkSolanaWallet}>
-                  {walletLinked ? 'Relink' : (window.solana?.isPhantom || window.solana?.isSolflare) ? (walletAddress ? 'Sign & Link' : 'Connect & Link') : 'Verify Link'}
-                </button>
-                <button className="wallet-btn claim" type="button" disabled={walletLinking || walletClaiming || !walletLinked} onClick={claimOnchainRevenue}>
-                  {walletClaiming ? 'Claiming...' : 'Claim Revenue'}
-                </button>
-              </div>
-
-              <div className="wallet-note">100 taps = 0.01 SOL</div>
-              {walletClaimCount > 0 ? <div className="wallet-note">Badge unlocked: on-chain earner</div> : <div className="wallet-note">Connect a wallet, sign the challenge, and unlock on-chain earnings.</div>}
-              {walletLastClaimAmountLamports > 0 ? <div className="wallet-note">Last receipt: {formatSol(walletLastClaimAmountLamports)} · {shortenAddress(revenueLastClaimSignature)}</div> : null}
+              <span className="text-[10px] text-secondary-fixed/50 font-bold uppercase">SOL Earnt</span>
             </div>
           </div>
         </div>
+
+        <section className="space-y-4">
+          <h2 className="text-xl font-black text-primary uppercase italic">Referrals</h2>
+          <div className="bg-slate-900 border-2 border-black p-4 rounded-xl hard-shadow flex flex-col gap-4">
+            <div className="flex justify-between items-center">
+               <span className="font-bold">Friends Invited:</span>
+               <span className="font-black text-secondary-fixed text-xl">{referralCount}</span>
+            </div>
+            <div>
+               <p className="text-xs text-slate-400 mb-2">Share your link to earn 5% of their points and special bonuses!</p>
+               <div className="flex gap-2">
+                 <input type="text" readOnly value={referralLink} className="flex-1 bg-black border-2 border-slate-700 rounded-lg p-2 text-xs text-white" />
+                 <button onClick={copyReferralLink} className="bg-primary-container text-white px-4 py-2 rounded-lg font-black text-xs active:scale-95">{copyLabel}</button>
+               </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-xl font-black text-primary uppercase italic">Web3 Wallet</h2>
+          <div className="bg-slate-900 border-2 border-black p-4 rounded-xl hard-shadow flex flex-col gap-4">
+             <div className="flex justify-between items-center">
+                <span className="font-bold text-sm">Status</span>
+                <span className={`px-2 py-1 rounded text-xs font-black ${walletLinked ? 'bg-green-500/20 text-green-400' : walletAddress ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400'}`}>
+                  {walletStatusLabel}
+                </span>
+             </div>
+             {walletAddress && (
+               <div className="text-xs text-slate-400 bg-black p-2 rounded border border-slate-800">
+                  {walletAddress}
+               </div>
+             )}
+             
+             <div className="grid grid-cols-2 gap-2 text-center text-[10px] mt-2">
+                <div className="bg-black p-2 rounded">
+                   <div className="text-slate-500 mb-1 uppercase font-black">Claimable</div>
+                   <div className="font-black text-primary-container whitespace-nowrap">{(walletClaimableLamports / 1e9).toFixed(4)} SOL</div>
+                </div>
+                <div className="bg-black p-2 rounded">
+                   <div className="text-slate-500 mb-1 uppercase font-black">Claimed</div>
+                   <div className="font-black text-white whitespace-nowrap">{(revenueClaimedLamports / 1e9).toFixed(4)} SOL</div>
+                </div>
+             </div>
+
+             <div className="flex flex-col gap-2 mt-2">
+                <button className="w-full bg-slate-800 text-white font-black py-3 rounded-xl border-2 border-black active:scale-95" disabled={walletLinking || walletClaiming} onClick={connectSolanaWallet}>
+                  {walletAddress ? 'Reconnect Wallet' : 'Connect Wallet'}
+                </button>
+                <button className="w-full bg-[#FFD200] text-black font-black py-3 rounded-xl border-2 border-black active:scale-95" disabled={walletLinking || walletClaiming} onClick={linkSolanaWallet}>
+                  {walletLinked ? 'Relink Wallet' : 'Sign & Link'}
+                </button>
+                <button className={`w-full font-black py-3 rounded-xl border-2 border-black active:scale-95 ${walletClaimableLamports > 0 ? 'bg-green-500 text-black' : 'bg-slate-800 text-slate-500'}`} disabled={walletLinking || walletClaiming || !walletLinked || walletClaimableLamports <= 0} onClick={claimOnchainRevenue}>
+                  {walletClaiming ? 'Claiming...' : 'Claim Revenue'}
+                </button>
+             </div>
+          </div>
+        </section>
       </section>
 
-      <nav className="bottom-nav">
-        <button className={`nav-btn ${activeTab === 'game' ? 'active' : ''}`} data-section="game" type="button" onClick={() => switchTab('game')}>
-          <span className="nav-icon">🎮</span>
-          <span className="nav-label">Game</span>
+      <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-end px-2 pb-6 pt-3 bg-slate-900 border-t-4 border-black shadow-[0px_-4px_0px_0px_rgba(0,0,0,1)] rounded-t-2xl">
+        <button className={`flex flex-col items-center justify-center transition-all duration-100 ${activeTab === 'game' ? 'bg-[#CCFF00] text-black border-2 border-black rounded-xl px-4 py-2 scale-110 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] translate-y-[-8px]' : 'text-slate-500 hover:text-[#CCFF00] p-2'}`} onClick={() => switchTab('game')}>
+          <span className="material-symbols-outlined" style={activeTab === 'game' ? { fontVariationSettings: "'FILL' 1" } : {}}>home</span>
+          <span className="font-['Plus_Jakarta_Sans'] font-black text-[10px] uppercase mt-1">Home</span>
         </button>
-        <button className={`nav-btn ${activeTab === 'shop' ? 'active' : ''}`} data-section="shop" type="button" onClick={() => switchTab('shop')}>
-          <span className="nav-icon">🛍️</span>
-          <span className="nav-label">Shop</span>
+        <button className={`flex flex-col items-center justify-center transition-all duration-100 ${activeTab === 'shop' ? 'bg-[#FFD200] text-black border-2 border-black rounded-xl px-4 py-2 scale-110 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] translate-y-[-8px]' : 'text-slate-500 hover:text-[#FFD200] p-2'}`} onClick={() => switchTab('shop')}>
+          <span className="material-symbols-outlined" style={activeTab === 'shop' ? { fontVariationSettings: "'FILL' 1" } : {}}>shopping_cart</span>
+          <span className="font-['Plus_Jakarta_Sans'] font-black text-[10px] uppercase mt-1">Shop</span>
         </button>
-        <button className={`nav-btn ${activeTab === 'top' ? 'active' : ''}`} data-section="top" type="button" onClick={() => switchTab('top')}>
-          <span className="nav-icon">🏆</span>
-          <span className="nav-label">Top</span>
+        <button className={`flex flex-col items-center justify-center transition-all duration-100 ${activeTab === 'top' ? 'bg-primary-container text-white border-2 border-black rounded-xl px-4 py-2 scale-110 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] translate-y-[-8px]' : 'text-slate-500 hover:text-primary-container p-2'}`} onClick={() => switchTab('top')}>
+          <span className="material-symbols-outlined" style={activeTab === 'top' ? { fontVariationSettings: "'FILL' 1" } : {}}>leaderboard</span>
+          <span className="font-['Plus_Jakarta_Sans'] font-black text-[10px] uppercase mt-1">Ranks</span>
         </button>
-        <button className={`nav-btn ${activeTab === 'daily' ? 'active' : ''}`} data-section="daily" type="button" onClick={() => switchTab('daily')}>
-          <span className="nav-icon">🎁</span>
-          <span className="nav-label">Daily</span>
+        <button className={`flex flex-col items-center justify-center transition-all duration-100 ${activeTab === 'daily' ? 'bg-secondary-fixed text-black border-2 border-black rounded-xl px-4 py-2 scale-110 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] translate-y-[-8px]' : 'text-slate-500 hover:text-secondary-fixed p-2'}`} onClick={() => switchTab('daily')}>
+          <span className="material-symbols-outlined" style={activeTab === 'daily' ? { fontVariationSettings: "'FILL' 1" } : {}}>insights</span>
+          <span className="font-['Plus_Jakarta_Sans'] font-black text-[10px] uppercase mt-1">Progress</span>
+        </button>
+        <button className={`flex flex-col items-center justify-center transition-all duration-100 ${activeTab === 'profile' ? 'bg-blue-500 text-white border-2 border-black rounded-xl px-4 py-2 scale-110 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] translate-y-[-8px]' : 'text-slate-500 hover:text-blue-500 p-2'}`} onClick={() => switchTab('profile')}>
+          <span className="material-symbols-outlined" style={activeTab === 'profile' ? { fontVariationSettings: "'FILL' 1" } : {}}>person</span>
+          <span className="font-['Plus_Jakarta_Sans'] font-black text-[10px] uppercase mt-1">Profile</span>
         </button>
       </nav>
 

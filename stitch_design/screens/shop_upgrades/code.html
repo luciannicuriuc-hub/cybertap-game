@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>QUEST_MASTER - Item Shop</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            background-color: #1a0b2e;
+            color: #eddcff;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glossy-overlay {
+            background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 50%);
+        }
+        .block-shadow-primary {
+            box-shadow: 0 6px 0 0 #b29300;
+        }
+        .block-shadow-primary:active {
+            box-shadow: 0 0px 0 0 #b29300;
+            transform: translateY(6px);
+        }
+        .block-shadow-card {
+            box-shadow: 0 8px 0 0 rgba(0,0,0,0.3);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#edb1ff",
+                        "surface-container-highest": "#3d2e52",
+                        "primary-fixed-dim": "#ecc200",
+                        "secondary": "#edb1ff",
+                        "surface-container": "#27183b",
+                        "on-tertiary-fixed": "#351000",
+                        "on-surface-variant": "#d1c6ab",
+                        "on-error": "#690005",
+                        "background": "#1a0b2e",
+                        "on-secondary-container": "#e498ff",
+                        "on-tertiary-fixed-variant": "#7a3000",
+                        "on-background": "#eddcff",
+                        "on-primary-fixed-variant": "#564500",
+                        "tertiary-container": "#ffcbb4",
+                        "surface-bright": "#413257",
+                        "surface": "#1a0b2e",
+                        "on-secondary": "#520070",
+                        "surface-container-low": "#231437",
+                        "on-secondary-fixed": "#320046",
+                        "primary-fixed": "#ffe07c",
+                        "outline-variant": "#4d4632",
+                        "secondary-fixed": "#f9d8ff",
+                        "primary-container": "#ffd200",
+                        "on-primary-container": "#705b00",
+                        "surface-tint": "#ecc200",
+                        "on-tertiary-container": "#9e3f00",
+                        "on-error-container": "#ffdad6",
+                        "primary": "#fff2d1",
+                        "surface-container-high": "#322346",
+                        "on-tertiary": "#561f00",
+                        "surface-variant": "#3d2e52",
+                        "surface-container-lowest": "#150629",
+                        "on-secondary-fixed-variant": "#6e208c",
+                        "outline": "#999077",
+                        "inverse-on-surface": "#38294d",
+                        "on-surface": "#eddcff",
+                        "tertiary-fixed": "#ffdbcc",
+                        "on-primary": "#3b2f00",
+                        "surface-dim": "#1a0b2e",
+                        "inverse-surface": "#eddcff",
+                        "inverse-primary": "#725c00",
+                        "error": "#ffb4ab",
+                        "on-primary-fixed": "#231b00",
+                        "tertiary-fixed-dim": "#ffb693",
+                        "secondary-container": "#6e208c",
+                        "tertiary": "#ffefea",
+                        "error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "12px",
+                        "safe-margin": "24px",
+                        "lg": "32px",
+                        "xs": "4px",
+                        "md": "20px",
+                        "base": "8px",
+                        "xl": "48px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Be Vietnam Pro"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-xl": ["Plus Jakarta Sans"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Be Vietnam Pro"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "800"}],
+                        "headline-xl": ["40px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "body-lg": ["18px", {"lineHeight": "1.5", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "label-sm": ["12px", {"lineHeight": "1.2", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-on-background pb-32">
+<!-- TopAppBar -->
+<nav class="bg-slate-900 dark:bg-black border-b-4 border-slate-800 dark:border-zinc-900 drop-shadow-[0_4px_0_rgba(0,0,0,1)] sticky top-0 z-50">
+<div class="flex justify-between items-center w-full px-6 py-4 max-w-md mx-auto">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full border-2 border-[#FFD200] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="User hero avatar with gold crown and heroic expression, 3d game style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDahLoo7EhEesM0kt_TaL-IMSVLaJ-hin2ScPCGg5bMUDltmQ2v02tRkIV1RVT6CTgLRD4-LLjAqUp8kTmH4qfmWZzknV9MC6ad0S7MWanCXTaSiFPVbsEazANmLX9sJlmZ3G3E572jikoakMLwqv2OA8Gn3f8r5bF9y5GYGO061iXeDzhZr3WqSYHOiV3snOqKLyLQF5WOfOdf_ye3l0i5R1xxqwz2H_Plj1TbU9ON60bBPqBfl2UetsMt4iDS4EiafnszxIUt11I2"/>
+</div>
+<h1 class="text-2xl font-black text-[#FFD200] italic font-['Plus_Jakarta_Sans'] uppercase tracking-wider">QUEST_MASTER</h1>
+</div>
+<div class="bg-surface-container-highest px-3 py-1 rounded-full border-2 border-slate-700 flex items-center gap-2 hover:scale-105 transition-transform cursor-pointer">
+<span class="text-white font-bold">1,250</span>
+<span class="text-xl">💎</span>
+</div>
+</div>
+</nav>
+<main class="max-w-md mx-auto px-safe-margin pt-6 space-y-8">
+<!-- Promotional Hero Card -->
+<section class="relative w-full h-48 rounded-[32px] overflow-hidden border-4 border-primary-container block-shadow-card">
+<img class="w-full h-full object-cover" data-alt="vibrant neon liquid abstract background with glowing gold sparks and purple energy swirls for game promotion" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAN---l2L8Z3SPd33BWDKBs8bVHVqfuj0uEcjUCa3PJ-7weicVqTUVagh9un2Evujwn2C_p7JvgMmn1Or_4YoBY71vbIH0NVpkTllLCBUokd5mQsTZuUtQr8LzME5NUPYC944IJxYQpkycvZx2SQXfdyWcgwBaThNfEl4n8r6PX-sOU0Q03HMMamDP2PlEzEvFNi8b2m6LBvic11kd72TftSFNuFzb-5-MSivxRB0EcLIHEQpF-LoGqgw-WpCycDDfytCbm0yK1v4Su"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
+<span class="bg-error text-on-error w-fit px-3 py-1 rounded-full font-label-sm text-label-sm mb-2 uppercase italic">Limited Time!</span>
+<h2 class="font-headline-md text-headline-md text-white uppercase italic">Mythic Dragon Skin</h2>
+<p class="text-primary font-bold">Only 24 hours left!</p>
+</div>
+<div class="absolute inset-0 glossy-overlay pointer-events-none"></div>
+</section>
+<!-- Category Tabs -->
+<div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide no-scrollbar">
+<button class="bg-[#FFD200] text-slate-900 px-6 py-3 rounded-2xl font-headline-md text-label-sm flex-shrink-0 border-b-4 border-on-primary-container shadow-lg flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bolt</span>
+                BOOSTERS
+            </button>
+<button class="bg-surface-container-high text-on-surface-variant px-6 py-3 rounded-2xl font-headline-md text-label-sm flex-shrink-0 border-b-4 border-black/20 hover:bg-surface-container-highest transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined">palette</span>
+                SKINS
+            </button>
+<button class="bg-surface-container-high text-on-surface-variant px-6 py-3 rounded-2xl font-headline-md text-label-sm flex-shrink-0 border-b-4 border-black/20 hover:bg-surface-container-highest transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined">upgrade</span>
+                UPGRADES
+            </button>
+</div>
+<!-- Shop Grid -->
+<div class="grid grid-cols-2 gap-4">
+<!-- Item 1 -->
+<div class="bg-surface-container-low border-4 border-surface-container-highest rounded-[24px] p-4 flex flex-col items-center text-center relative block-shadow-card">
+<div class="w-full h-24 bg-surface-container-highest rounded-xl mb-4 flex items-center justify-center relative overflow-hidden">
+<span class="material-symbols-outlined text-5xl text-[#FFD200]" style="font-variation-settings: 'FILL' 1;">speed</span>
+<div class="absolute inset-0 glossy-overlay pointer-events-none"></div>
+</div>
+<h3 class="font-headline-md text-label-sm text-on-surface mb-1">XP SURGE</h3>
+<p class="font-body-md text-[10px] text-on-surface-variant mb-4 uppercase">Double XP for 1hr</p>
+<button class="w-full bg-[#FFD200] text-slate-900 py-3 rounded-xl font-headline-md text-label-sm block-shadow-primary relative overflow-hidden">
+<div class="absolute inset-0 glossy-overlay"></div>
+<span class="relative z-10 flex items-center justify-center gap-1">
+                        250 <span class="text-[14px]">💎</span> BUY
+                    </span>
+</button>
+</div>
+<!-- Item 2 -->
+<div class="bg-surface-container-low border-4 border-surface-container-highest rounded-[24px] p-4 flex flex-col items-center text-center relative block-shadow-card">
+<div class="absolute -top-2 -right-2 bg-secondary text-on-secondary px-2 py-1 rounded-lg text-[10px] font-black italic transform rotate-12 z-10 border-2 border-surface-container-highest">
+                    POPULAR
+                </div>
+<div class="w-full h-24 bg-surface-container-highest rounded-xl mb-4 flex items-center justify-center relative overflow-hidden">
+<span class="material-symbols-outlined text-5xl text-secondary" style="font-variation-settings: 'FILL' 1;">shield</span>
+<div class="absolute inset-0 glossy-overlay pointer-events-none"></div>
+</div>
+<h3 class="font-headline-md text-label-sm text-on-surface mb-1">MEGA SHIELD</h3>
+<p class="font-body-md text-[10px] text-on-surface-variant mb-4 uppercase">Invincible 5 mins</p>
+<button class="w-full bg-[#FFD200] text-slate-900 py-3 rounded-xl font-headline-md text-label-sm block-shadow-primary relative overflow-hidden">
+<div class="absolute inset-0 glossy-overlay"></div>
+<span class="relative z-10 flex items-center justify-center gap-1">
+                        500 <span class="text-[14px]">💎</span> BUY
+                    </span>
+</button>
+</div>
+<!-- Item 3 -->
+<div class="bg-surface-container-low border-4 border-surface-container-highest rounded-[24px] p-4 flex flex-col items-center text-center relative block-shadow-card">
+<div class="w-full h-24 bg-surface-container-highest rounded-xl mb-4 flex items-center justify-center relative overflow-hidden">
+<span class="material-symbols-outlined text-5xl text-tertiary-container" style="font-variation-settings: 'FILL' 1;">auto_fix_high</span>
+<div class="absolute inset-0 glossy-overlay pointer-events-none"></div>
+</div>
+<h3 class="font-headline-md text-label-sm text-on-surface mb-1">REBIRTH</h3>
+<p class="font-body-md text-[10px] text-on-surface-variant mb-4 uppercase">Instant Respawn</p>
+<button class="w-full bg-[#FFD200] text-slate-900 py-3 rounded-xl font-headline-md text-label-sm block-shadow-primary relative overflow-hidden">
+<div class="absolute inset-0 glossy-overlay"></div>
+<span class="relative z-10 flex items-center justify-center gap-1">
+                        100 <span class="text-[14px]">💎</span> BUY
+                    </span>
+</button>
+</div>
+<!-- Item 4 -->
+<div class="bg-surface-container-low border-4 border-surface-container-highest rounded-[24px] p-4 flex flex-col items-center text-center relative block-shadow-card">
+<div class="w-full h-24 bg-surface-container-highest rounded-xl mb-4 flex items-center justify-center relative overflow-hidden">
+<span class="material-symbols-outlined text-5xl text-error" style="font-variation-settings: 'FILL' 1;">rocket_launch</span>
+<div class="absolute inset-0 glossy-overlay pointer-events-none"></div>
+</div>
+<h3 class="font-headline-md text-label-sm text-on-surface mb-1">JET PACK</h3>
+<p class="font-body-md text-[10px] text-on-surface-variant mb-4 uppercase">Fly Over Obstacles</p>
+<button class="w-full bg-slate-700 text-slate-400 py-3 rounded-xl font-headline-md text-label-sm border-b-4 border-slate-900 cursor-not-allowed">
+<span class="relative z-10">MAX LEVEL</span>
+</button>
+</div>
+</div>
+<!-- Weekly Specials Bento Section -->
+<section class="space-y-4 pt-4">
+<h2 class="font-headline-md text-headline-md text-primary italic uppercase tracking-tight">Weekly Specials</h2>
+<div class="grid grid-cols-4 gap-4">
+<div class="col-span-4 bg-surface-container-high rounded-[32px] p-6 border-4 border-secondary-container relative overflow-hidden block-shadow-card">
+<div class="flex justify-between items-center relative z-10">
+<div class="space-y-1">
+<span class="text-secondary font-black text-xs uppercase tracking-widest">Bento Pack</span>
+<h3 class="font-headline-md text-headline-md text-white italic">ROYAL CRATE</h3>
+<p class="text-on-surface-variant text-sm max-w-[200px]">Unlock random legendary cosmetic and 1000 Gems!</p>
+</div>
+<div class="bg-secondary-container p-4 rounded-3xl border-4 border-secondary">
+<span class="material-symbols-outlined text-4xl text-secondary" style="font-variation-settings: 'FILL' 1;">redeem</span>
+</div>
+</div>
+<button class="mt-6 w-full bg-secondary text-on-secondary py-4 rounded-2xl font-headline-md text-headline-md uppercase italic block-shadow-card active:translate-y-2 active:shadow-none transition-all">
+                        BUY BUNDLE
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-end px-4 pb-6 pt-2 bg-slate-900 dark:bg-zinc-950 border-t-4 border-slate-800 dark:border-zinc-900 shadow-[0_-8px_0_rgba(0,0,0,0.25)]">
+<div class="flex flex-col items-center justify-center text-slate-400 p-2 hover:text-[#FFD200] transition-colors cursor-pointer group">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" data-icon="grid_view">grid_view</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] tracking-tighter">DASHBOARD</span>
+</div>
+<!-- ACTIVE TAB: SHOP -->
+<div class="flex flex-col items-center justify-center bg-[#FFD200] text-slate-900 rounded-2xl px-4 py-2 translate-y-[-8px] shadow-[0_4px_0_#b29300] transition-all cursor-pointer">
+<span class="material-symbols-outlined scale-110" data-icon="shopping_cart" style="font-variation-settings: 'FILL' 1;">shopping_cart</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] tracking-tighter">SHOP</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 p-2 hover:text-[#FFD200] transition-colors cursor-pointer group">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" data-icon="leaderboard">leaderboard</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] tracking-tighter">RANKS</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 p-2 hover:text-[#FFD200] transition-colors cursor-pointer group">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" data-icon="person">person</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] tracking-tighter">PROFILE</span>
+</div>
+</nav>
+</body></html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&amp;family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#283500",
+                        "secondary-fixed": "#c3f400",
+                        "on-secondary-container": "#556d00",
+                        "surface-container-highest": "#32343f",
+                        "surface-tint": "#b6c4ff",
+                        "on-tertiary-fixed": "#320047",
+                        "error-container": "#93000a",
+                        "on-tertiary-container": "#fadeff",
+                        "surface-container-lowest": "#0c0e17",
+                        "primary-fixed": "#dce1ff",
+                        "inverse-on-surface": "#2e303a",
+                        "secondary-container": "#c3f400",
+                        "inverse-surface": "#e1e1ef",
+                        "on-error": "#690005",
+                        "on-surface": "#e1e1ef",
+                        "outline-variant": "#434656",
+                        "surface-variant": "#32343f",
+                        "on-primary": "#002780",
+                        "inverse-primary": "#004dea",
+                        "surface-container-high": "#282933",
+                        "on-primary-container": "#e3e6ff",
+                        "tertiary-fixed": "#f8d8ff",
+                        "secondary-fixed-dim": "#abd600",
+                        "on-primary-fixed": "#001551",
+                        "on-background": "#e1e1ef",
+                        "secondary": "#ffffff",
+                        "primary": "#b6c4ff",
+                        "background": "#11131c",
+                        "on-primary-fixed-variant": "#0039b3",
+                        "surface-container-low": "#191b25",
+                        "surface-dim": "#11131c",
+                        "surface": "#11131c",
+                        "primary-container": "#0055ff",
+                        "on-tertiary": "#520071",
+                        "error": "#ffb4ab",
+                        "on-secondary-fixed": "#161e00",
+                        "outline": "#8d90a2",
+                        "tertiary": "#ecb2ff",
+                        "tertiary-fixed-dim": "#ecb2ff",
+                        "surface-container": "#1d1f29",
+                        "tertiary-container": "#a700e2",
+                        "on-secondary-fixed-variant": "#3c4d00",
+                        "on-surface-variant": "#c3c5d9",
+                        "primary-fixed-dim": "#b6c4ff",
+                        "surface-bright": "#373943",
+                        "on-tertiary-fixed-variant": "#74009f",
+                        "on-error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "gutter": "16px",
+                        "lg": "24px",
+                        "margin-safe": "20px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "unit": "4px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "display-xl": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Space Grotesk"],
+                        "headline-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "1.5", "fontWeight": "600"}],
+                        "display-xl": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "headline-md": ["24px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "500"}],
+                        "label-sm": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "800"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .cyber-grid {
+            background-image: 
+                linear-gradient(to right, rgba(0, 85, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 85, 255, 0.1) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        .hard-shadow {
+            box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+        }
+        .hard-shadow-sm {
+            box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+        }
+        .active-press:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 1);
+        }
+        .bloom-cyan {
+            filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.4));
+        }
+        .inner-glow {
+            box-shadow: inset 0 0 15px rgba(182, 196, 255, 0.1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-dim text-on-surface font-body-md selection:bg-primary-container selection:text-white overflow-hidden h-screen w-full flex flex-col">
+<!-- Top Navigation Bar (Hidden on onboarding as per UX Goal) -->
+<!-- Main Content Canvas -->
+<main class="flex-1 relative flex flex-col items-center justify-center overflow-hidden bg-slate-950 px-gutter">
+<!-- Background Decorative Elements -->
+<div class="absolute inset-0 cyber-grid opacity-50"></div>
+<div class="absolute top-[-10%] right-[-10%] w-64 h-64 bg-primary-container/20 rounded-full blur-[100px]"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-80 h-80 bg-tertiary-container/20 rounded-full blur-[120px]"></div>
+<!-- Hero Section: Mascot & Branding -->
+<div class="relative z-10 w-full max-w-md flex flex-col items-center gap-xl">
+<!-- Animated-Feel Floating Badge -->
+<div class="flex items-center gap-xs bg-black border-2 border-primary-container px-md py-xs rounded-full hard-shadow-sm mb-[-16px] animate-bounce">
+<span class="material-symbols-outlined text-primary text-[16px]">bolt</span>
+<span class="font-label-sm text-label-sm text-primary uppercase">Alpha Protocol Active</span>
+</div>
+<!-- Title & Branding -->
+<div class="text-center">
+<h1 class="font-display-xl text-display-xl text-primary drop-shadow-[4px_4px_0px_rgba(0,0,0,1)] uppercase italic tracking-tighter">
+                    WELCOME TO <br/>
+<span class="text-secondary-fixed">CYBERTAP</span>
+</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-sm max-w-[280px] mx-auto leading-tight">
+                    The ultimate high-speed tap-to-earn cyberpunk adventure.
+                </p>
+</div>
+<!-- Mascot Illustration -->
+<div class="relative w-full aspect-square max-w-[320px] flex items-center justify-center">
+<!-- Background Glow -->
+<div class="absolute inset-0 bg-primary-container/30 rounded-full blur-3xl opacity-50 animate-pulse"></div>
+<!-- Main Image -->
+<div class="relative z-10 w-[85%] h-[85%] border-4 border-black rounded-[40px] overflow-hidden bg-slate-900 hard-shadow bloom-cyan rotate-[-2deg]">
+<img alt="Cyber Mascot" class="w-full h-full object-cover scale-110" data-alt="Futuristic cyberpunk robot mascot with neon blue glowing visor and metallic plating, vibrant cartoon style, dynamic pose, deep blue background with circuitry patterns" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7BlqBfo23GVBh9wjUAj8lzbweouJ8KYJS7b19Bxam1YX7fM4rW9Oip0bt1jPu9tQpkUx7NuwimPG3HF3mkpqClhfZkcH4f-xuGuAl528BjCxqw53cLNen5HanEWVRqOLHaFGIosOJxFtqKt64oMorkzVJEFOMMi5AtCYuFiRVcrSO1c8-GWWjtRq4r2NJI3LK6bUtbQnkeeSCEDnu0hgtjvYQicgHL42BnJRKZ-BZUR3ZrgHQ_FijvOc7mQAxFAuY8B2i9hN_c5KH"/>
+<!-- Overlay Scanlines -->
+<div class="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]"></div>
+</div>
+<!-- Floating Accents -->
+<div class="absolute top-4 right-4 w-12 h-12 bg-tertiary-container border-2 border-black rounded-lg hard-shadow-sm flex items-center justify-center rotate-[15deg]">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">token</span>
+</div>
+<div class="absolute bottom-10 left-0 w-16 h-16 bg-secondary-fixed border-2 border-black rounded-full hard-shadow-sm flex items-center justify-center -rotate-[12deg]">
+<span class="material-symbols-outlined text-black font-black" style="font-variation-settings: 'FILL' 1;">rocket_launch</span>
+</div>
+</div>
+<!-- Action Area -->
+<div class="w-full flex flex-col gap-md mt-lg px-gutter">
+<!-- Primary Action -->
+<button class="w-full bg-[#CCFF00] hover:bg-[#d9ff33] text-black font-headline-md text-headline-md py-lg rounded-2xl border-4 border-black hard-shadow active-press flex items-center justify-center gap-sm transition-all group">
+<span class="material-symbols-outlined text-[32px] group-hover:scale-110 transition-transform" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                    START ADVENTURE
+                </button>
+<!-- Secondary Action: Connect -->
+<button class="w-full bg-slate-900 hover:bg-slate-800 text-white font-body-lg text-body-lg py-md rounded-xl border-4 border-black hard-shadow-sm active-press flex items-center justify-center gap-sm transition-all group">
+<span class="bg-[#0088cc] p-1 rounded-md">
+<svg class="w-5 h-5 fill-white" viewbox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.69-.52.35-.99.53-1.41.52-.46-.01-1.35-.26-2.01-.48-.81-.27-1.45-.42-1.39-.89.03-.25.38-.51 1.07-.78 4.2-1.82 7-3.03 8.4-3.61 4-.1.17 1.61 2.09 4.1.2 4.64.8z"></path></svg>
+</span>
+                    CONNECT TELEGRAM
+                </button>
+<!-- Footer Legal/Info -->
+<p class="text-center font-label-sm text-[10px] text-slate-500 uppercase tracking-widest mt-sm">
+                    By entering you agree to our <span class="text-primary-fixed underline">terms of play</span>
+</p>
+</div>
+</div>
+<!-- Floating Particles/Elements -->
+<div class="absolute top-1/4 left-10 opacity-30 animate-pulse">
+<span class="material-symbols-outlined text-primary text-[40px]">blur_on</span>
+</div>
+<div class="absolute bottom-1/4 right-10 opacity-30 animate-pulse" style="animation-delay: 1s;">
+<span class="material-symbols-outlined text-tertiary text-[48px]">grid_view</span>
+</div>
+</main>
+<!-- Navigation Shell (Suppressed as per "Linear/Transactional" rule for onboarding) -->
+</body></html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,800&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#283500",
+                        "secondary-fixed": "#c3f400",
+                        "on-secondary-container": "#556d00",
+                        "surface-container-highest": "#32343f",
+                        "surface-tint": "#b6c4ff",
+                        "on-tertiary-fixed": "#320047",
+                        "error-container": "#93000a",
+                        "on-tertiary-container": "#fadeff",
+                        "surface-container-lowest": "#0c0e17",
+                        "primary-fixed": "#dce1ff",
+                        "inverse-on-surface": "#2e303a",
+                        "secondary-container": "#c3f400",
+                        "inverse-surface": "#e1e1ef",
+                        "on-error": "#690005",
+                        "on-surface": "#e1e1ef",
+                        "outline-variant": "#434656",
+                        "surface-variant": "#32343f",
+                        "on-primary": "#002780",
+                        "inverse-primary": "#004dea",
+                        "surface-container-high": "#282933",
+                        "on-primary-container": "#e3e6ff",
+                        "tertiary-fixed": "#f8d8ff",
+                        "secondary-fixed-dim": "#abd600",
+                        "on-primary-fixed": "#001551",
+                        "on-background": "#e1e1ef",
+                        "secondary": "#ffffff",
+                        "primary": "#b6c4ff",
+                        "background": "#11131c",
+                        "on-primary-fixed-variant": "#0039b3",
+                        "surface-container-low": "#191b25",
+                        "surface-dim": "#11131c",
+                        "surface": "#11131c",
+                        "primary-container": "#0055ff",
+                        "on-tertiary": "#520071",
+                        "error": "#ffb4ab",
+                        "on-secondary-fixed": "#161e00",
+                        "outline": "#8d90a2",
+                        "tertiary": "#ecb2ff",
+                        "tertiary-fixed-dim": "#ecb2ff",
+                        "surface-container": "#1d1f29",
+                        "tertiary-container": "#a700e2",
+                        "on-secondary-fixed-variant": "#3c4d00",
+                        "on-surface-variant": "#c3c5d9",
+                        "primary-fixed-dim": "#b6c4ff",
+                        "surface-bright": "#373943",
+                        "on-tertiary-fixed-variant": "#74009f",
+                        "on-error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "gutter": "16px",
+                        "lg": "24px",
+                        "margin-safe": "20px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "unit": "4px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "display-xl": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Space Grotesk"],
+                        "headline-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "1.5", "fontWeight": "600"}],
+                        "display-xl": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "headline-md": ["24px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "500"}],
+                        "label-sm": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "800"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .tap-core-glow {
+            box-shadow: 0 0 60px 10px rgba(0, 85, 255, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+        .circuit-bg {
+            background-image: radial-gradient(#1d1f29 2px, transparent 2px);
+            background-size: 24px 24px;
+        }
+        .hard-shadow {
+            box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+        }
+        .hard-shadow-active:active {
+            box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 1);
+            transform: translate(2px, 2px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen circuit-bg">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 h-16 bg-slate-950 border-b-4 border-black shadow-[0px_4px_0px_0px_rgba(0,0,0,1)]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden bg-surface-container">
+<img alt="User Pilot Avatar" data-alt="close-up 3d render of a futuristic cyber pilot avatar wearing a glowing neon visor and sleek chrome armor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATpbd59qTvWL9C-7-G5pVBJLY45WeToWxg6ljs1cTjVrpREdjx24kynVcjiaWZTarCQqDvn2eIWdCpbkhBsQfxmDy1uoH8ASDpJ-NLcmilmbdHaGUvHPKUn4b_WEUM3IDxUGB7IB0IdRKqKrADfu6xcUc73tNdImgRALFmzbcPmuFJHWIt1nTAkijJulY9pAC2KiTnnayM3wA2Qjj_xA2pI53gDOfePZJCYQLPwhlvfJ636hjaB593zmnlUaLHI5wXIWgJO9uFdH3y"/>
+</div>
+<h1 class="font-['Plus_Jakarta_Sans'] font-black uppercase tracking-tighter text-xl italic drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] text-blue-500">CYBERTAP</h1>
+</div>
+<div class="flex items-center gap-2 bg-slate-900 border-2 border-black rounded-lg px-3 py-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+<span class="material-symbols-outlined text-secondary-fixed" style="font-variation-settings: 'FILL' 1;">diamond</span>
+<span class="font-['Plus_Jakarta_Sans'] font-black uppercase tracking-tighter text-blue-500">1,250 GEMS</span>
+</div>
+</header>
+<main class="pt-24 pb-32 px-4 max-w-md mx-auto flex flex-col gap-8">
+<!-- Stats Section -->
+<section class="grid grid-cols-3 gap-3">
+<div class="bg-surface-container border-2 border-black hard-shadow p-3 rounded-xl flex flex-col items-center">
+<span class="text-label-sm font-label-sm text-outline mb-1 uppercase">Coins</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary-fixed text-lg" style="font-variation-settings: 'FILL' 1;">monetization_on</span>
+<span class="text-headline-md font-headline-md text-secondary-fixed">84.2K</span>
+</div>
+</div>
+<div class="bg-surface-container border-2 border-black hard-shadow p-3 rounded-xl flex flex-col items-center">
+<span class="text-label-sm font-label-sm text-outline mb-1 uppercase">Energy</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary-container text-lg" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<span class="text-headline-md font-headline-md text-primary-container">450</span>
+</div>
+</div>
+<div class="bg-surface-container border-2 border-black hard-shadow p-3 rounded-xl flex flex-col items-center">
+<span class="text-label-sm font-label-sm text-outline mb-1 uppercase">Multi</span>
+<div class="bg-tertiary-container text-white px-2 py-0.5 rounded border border-black text-xs font-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+                    x5.2
+                </div>
+</div>
+</section>
+<!-- Central Tapping Mechanic -->
+<section class="relative flex flex-col items-center justify-center py-12">
+<!-- Energy Bar Overlay -->
+<div class="absolute -top-4 w-full px-8">
+<div class="h-6 w-full bg-black rounded-full border-2 border-slate-700 overflow-hidden relative">
+<div class="h-full bg-primary-container w-3/4 shadow-[0_0_15px_rgba(0,85,255,0.8)] relative">
+<div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent w-1/4 animate-pulse"></div>
+</div>
+<span class="absolute inset-0 flex items-center justify-center text-[10px] font-black text-white drop-shadow-md">750 / 1000 MAX</span>
+</div>
+</div>
+<!-- The Tap Core -->
+<button class="group relative active:scale-95 transition-transform duration-75">
+<!-- Outer Glow -->
+<div class="absolute inset-0 rounded-full bg-primary-container/20 blur-3xl animate-pulse"></div>
+<!-- Main Button Body -->
+<div class="w-64 h-64 rounded-full bg-slate-900 border-[6px] border-black p-4 shadow-[0_12px_0_0_rgba(0,0,0,1)] tap-core-glow overflow-hidden flex items-center justify-center relative">
+<!-- Glassy Inner Shell -->
+<div class="w-full h-full rounded-full bg-gradient-to-br from-primary-container to-blue-900 border-4 border-white/20 flex items-center justify-center relative overflow-hidden">
+<!-- Holographic Lines -->
+<div class="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,white_10px,white_11px)]"></div>
+<span class="material-symbols-outlined text-white text-9xl drop-shadow-2xl font-variation-settings: 'FILL' 1;">
+                            ads_click
+                        </span>
+<!-- Pulse Ring -->
+<div class="absolute inset-0 border-[12px] border-white/10 rounded-full scale-90"></div>
+</div>
+</div>
+</button>
+<div class="mt-8 text-center">
+<p class="text-label-sm font-label-sm text-outline uppercase tracking-widest">+12 COINS / TAP</p>
+</div>
+</section>
+<!-- World Events & Daily Quests -->
+<section class="flex flex-col gap-4">
+<!-- World Event Card -->
+<div class="bg-primary-container border-2 border-black rounded-2xl p-4 hard-shadow relative overflow-hidden">
+<div class="absolute top-0 right-0 p-2">
+<span class="bg-black text-secondary-fixed text-[10px] font-black px-2 py-0.5 rounded-full border border-black">LIVE</span>
+</div>
+<div class="flex items-start gap-4">
+<div class="bg-black/20 p-2 rounded-xl border border-white/10">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">public</span>
+</div>
+<div>
+<h3 class="text-headline-md font-headline-md text-white">NEON STORM</h3>
+<p class="text-body-md font-body-md text-blue-100/80">Multiplier increased to 2x for all taps in the next 14m</p>
+</div>
+</div>
+</div>
+<!-- Daily Quests Bento Section -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container border-2 border-black rounded-2xl p-4 hard-shadow flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+<span class="text-[10px] font-black text-outline">DAILY</span>
+</div>
+<div>
+<h4 class="text-body-lg font-body-lg text-on-surface">5k Taps</h4>
+<div class="h-2 w-full bg-black rounded-full mt-2 overflow-hidden">
+<div class="h-full bg-tertiary w-1/3"></div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container border-2 border-black rounded-2xl p-4 hard-shadow flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<span class="material-symbols-outlined text-secondary-fixed" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="text-[10px] font-black text-outline">SOCIAL</span>
+</div>
+<div>
+<h4 class="text-body-lg font-body-lg text-on-surface">Invite 3</h4>
+<div class="h-2 w-full bg-black rounded-full mt-2 overflow-hidden">
+<div class="h-full bg-secondary-fixed w-2/3"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-3 bg-slate-900 border-t-4 border-black shadow-[0px_-4px_0px_0px_rgba(0,0,0,1)] rounded-t-2xl">
+<button class="flex flex-col items-center justify-center bg-[#CCFF00] text-black border-2 border-black rounded-xl px-3 py-1 scale-110 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:scale-95 transition-transform duration-100">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] uppercase mt-0.5">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-500 opacity-80 hover:text-blue-400 transition-all active:scale-95 duration-100">
+<span class="material-symbols-outlined">insights</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] uppercase mt-0.5">Progress</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-500 opacity-80 hover:text-blue-400 transition-all active:scale-95 duration-100">
+<span class="material-symbols-outlined">shopping_bag</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] uppercase mt-0.5">Shop</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-500 opacity-80 hover:text-blue-400 transition-all active:scale-95 duration-100">
+<span class="material-symbols-outlined">military_tech</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] uppercase mt-0.5">Ranks</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-500 opacity-80 hover:text-blue-400 transition-all active:scale-95 duration-100">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] uppercase mt-0.5">Profile</span>
+</button>
+</nav>
+<!-- Floating Action Button Context -->
+<!-- Suppressed based on "Contextual FAB Suppression" rules for primary Dashboard screen with bottom navigation -->
+</body></html>

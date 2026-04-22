@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&amp;family=Space+Grotesk:wght@500;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+        }
+        .cyber-grid {
+            background-image: linear-gradient(to right, rgba(0, 85, 255, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(0, 85, 255, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .inner-glow {
+            box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.2);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#283500",
+                        "secondary-fixed": "#c3f400",
+                        "on-secondary-container": "#556d00",
+                        "surface-container-highest": "#32343f",
+                        "surface-tint": "#b6c4ff",
+                        "on-tertiary-fixed": "#320047",
+                        "error-container": "#93000a",
+                        "on-tertiary-container": "#fadeff",
+                        "surface-container-lowest": "#0c0e17",
+                        "primary-fixed": "#dce1ff",
+                        "inverse-on-surface": "#2e303a",
+                        "secondary-container": "#c3f400",
+                        "inverse-surface": "#e1e1ef",
+                        "on-error": "#690005",
+                        "on-surface": "#e1e1ef",
+                        "outline-variant": "#434656",
+                        "surface-variant": "#32343f",
+                        "on-primary": "#002780",
+                        "inverse-primary": "#004dea",
+                        "surface-container-high": "#282933",
+                        "on-primary-container": "#e3e6ff",
+                        "tertiary-fixed": "#f8d8ff",
+                        "secondary-fixed-dim": "#abd600",
+                        "on-primary-fixed": "#001551",
+                        "on-background": "#e1e1ef",
+                        "secondary": "#ffffff",
+                        "primary": "#b6c4ff",
+                        "background": "#11131c",
+                        "on-primary-fixed-variant": "#0039b3",
+                        "surface-container-low": "#191b25",
+                        "surface-dim": "#11131c",
+                        "surface": "#11131c",
+                        "primary-container": "#0055ff",
+                        "on-tertiary": "#520071",
+                        "error": "#ffb4ab",
+                        "on-secondary-fixed": "#161e00",
+                        "outline": "#8d90a2",
+                        "tertiary": "#ecb2ff",
+                        "tertiary-fixed-dim": "#ecb2ff",
+                        "surface-container": "#1d1f29",
+                        "tertiary-container": "#a700e2",
+                        "on-secondary-fixed-variant": "#3c4d00",
+                        "on-surface-variant": "#c3c5d9",
+                        "primary-fixed-dim": "#b6c4ff",
+                        "surface-bright": "#373943",
+                        "on-tertiary-fixed-variant": "#74009f",
+                        "on-error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "gutter": "16px",
+                        "lg": "24px",
+                        "margin-safe": "20px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "unit": "4px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "display-xl": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Space Grotesk"],
+                        "headline-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "1.5", "fontWeight": "600"}],
+                        "display-xl": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "headline-md": ["24px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "500"}],
+                        "label-sm": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "800"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-slate-950 text-on-surface font-body-md cyber-grid min-h-screen pb-32">
+<!-- TopAppBar -->
+<nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 h-16 bg-slate-950 border-b-4 border-black shadow-[0px_4px_0px_0px_rgba(0,0,0,1)]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full border-2 border-blue-500 overflow-hidden shadow-[2px_2px_0px_rgba(0,0,0,1)] bg-slate-800">
+<img alt="User Pilot Avatar" data-alt="Cyberpunk aviator character portrait with glowing neon visor and futuristic flight helmet against a dark blue background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWfuUX-yHi6wimU9fU7JDdwPba0W10XkUKK_7CV_JHwJU2-IPXYKtTIT5-1rmg_rU2aO8E80C_qbfkl1txQ8aZTgIGjadE1I_ALZlr82Sbtiv69PsNWjojP6FOOrSOkOzhxEHR7HIMMzO5eOk-yRWm29JMR5sSPy2yNeAjMi66rsnvE6EaMRJjHUmWj5FPviCNqNsdZmYkeSjO7P4fZeJsOLCukQYaX95mpxnF4q32-KSAc8WI5zWLJh9HZVXI369r8DMEpn77KYyH"/>
+</div>
+<h1 class="font-['Plus_Jakarta_Sans'] font-black uppercase tracking-tighter text-xl text-blue-500 italic drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">CYBERTAP</h1>
+</div>
+<div class="flex items-center">
+<button class="bg-slate-900 border-2 border-black px-3 py-1 rounded-lg flex items-center gap-2 shadow-[2px_2px_0px_rgba(0,0,0,1)] active:translate-y-0.5 transition-all">
+<span class="material-symbols-outlined text-secondary-fixed text-sm" style="font-variation-settings: 'FILL' 1;">diamond</span>
+<span class="font-['Plus_Jakarta_Sans'] font-black uppercase tracking-tighter text-blue-500">1,250 GEMS</span>
+</button>
+</div>
+</nav>
+<main class="pt-24 px-4 max-w-md mx-auto">
+<!-- Header Section -->
+<header class="text-center mb-8">
+<h2 class="font-headline-lg text-secondary-fixed uppercase italic drop-shadow-[3px_3px_0px_rgba(0,0,0,1)] mb-2">TOP PILOTS</h2>
+<p class="font-label-sm text-blue-400 opacity-80 uppercase tracking-widest">SEASON 4 RANKINGS</p>
+</header>
+<!-- Podium Section -->
+<section class="flex items-end justify-center gap-2 mb-12 h-64">
+<!-- 2nd Place -->
+<div class="flex flex-col items-center w-1/3">
+<div class="relative mb-2">
+<div class="w-16 h-16 rounded-full border-4 border-slate-400 overflow-hidden shadow-[4px_4px_0px_rgba(0,0,0,1)] bg-slate-800 z-10">
+<img alt="Pilot 2" data-alt="Futuristic cyborg pilot with silver metallic plating and glowing purple optics, cartoon art style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTyB0K4_eEScxms2JNdFZGQlW9qlQuYzVw4mSb7K5brn0BbdG7dMufdm5OlVOsI48Sub38HkLE8LuAXtpNPFeB0P6jl5MEFyEpshnvHwOmOpQv7DhVwfJz8k5-jAjf9Atzbh1t8kaMZASygWtJo-iTlLjWfDlUYkEUaT--fdwDD5cC5gWmA-dJHOkyil_to-6TdSyS0PtgmaQxI2AAliPRvrnEtjQXD0yQ59REgn1sxsNFXiQyBtYn_n6tRXYyRX-cmiV8wRhhBqaw"/>
+</div>
+<div class="absolute -bottom-1 -right-1 bg-slate-400 text-black w-7 h-7 rounded-full flex items-center justify-center font-black border-2 border-black text-xs z-20">2</div>
+</div>
+<div class="w-full bg-slate-800 border-x-4 border-t-4 border-black h-20 rounded-t-xl flex flex-col items-center justify-center shadow-[4px_0px_0px_rgba(0,0,0,1)]">
+<span class="font-label-sm text-white truncate px-1">NEO_DASH</span>
+<span class="font-black text-blue-400 text-xs">842K</span>
+</div>
+</div>
+<!-- 1st Place -->
+<div class="flex flex-col items-center w-2/5">
+<div class="relative mb-2 scale-110">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2">
+<span class="material-symbols-outlined text-secondary-fixed text-4xl drop-shadow-[0_0_10px_#c3f400]" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+</div>
+<div class="w-20 h-20 rounded-full border-4 border-secondary-fixed overflow-hidden shadow-[4px_4px_0px_rgba(0,0,0,1)] bg-slate-800 z-10">
+<img alt="Pilot 1" data-alt="Premium cybernetic commander with golden armor details and intense blue glowing eyes, high-contrast comic book style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZaSEpZNoU5D6HXpkGcThc_gyOfU630ffhQHiK9ORZ3bG-_HRxMlU-QWZ2eENbHmAB4wum6cnoa3xR_wS81yko6D4M-uRG8ZQBoOfguv_glyn26FYUPB_B5HzJ0didXbe4jwAfuRirQXCcBpW91s-Xs4qh_RfU84sz2r5oBbauCdtIOwGgR5sONsZhnkbbpS4VQtnQHkBA-kwpx4PICInaUGHBUk_LYXKEagyUmqh0PbDsoFlCUQ8dQXapxFFN_e3ACGC7P8vT3xCR"/>
+</div>
+<div class="absolute -bottom-1 -right-1 bg-secondary-fixed text-black w-8 h-8 rounded-full flex items-center justify-center font-black border-2 border-black z-20">1</div>
+</div>
+<div class="w-full bg-primary-container border-x-4 border-t-4 border-black h-32 rounded-t-xl flex flex-col items-center justify-start pt-4 shadow-[4px_0px_0px_rgba(0,0,0,1)] inner-glow">
+<span class="font-label-sm text-white truncate px-1">ZENITH_01</span>
+<span class="font-black text-secondary-fixed text-lg">1.2M</span>
+</div>
+</div>
+<!-- 3rd Place -->
+<div class="flex flex-col items-center w-1/3">
+<div class="relative mb-2">
+<div class="w-16 h-16 rounded-full border-4 border-orange-600 overflow-hidden shadow-[4px_4px_0px_rgba(0,0,0,1)] bg-slate-800 z-10">
+<img alt="Pilot 3" data-alt="Spiky-haired anime style pilot with orange flight suit and mechanical goggles, vibrant neon palette" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1jt2F-aEo130jtds9g7Qs5bz9vY2BzPDysLQoyjcW8qlcbwx6I-Gxevu5_k84Z6-PbAs98KjLwfpGcB-S1i3vpKi3PNnfgmwAU4qDSQByph3B6w5xtVusJU19zlO2Nxi90Vv56GwlF7YpgZgHSzPl0p_D8B8DY2E0Hl5vyr6Lx3sz63PtRFMkyV-zbQqNN_AgXrTWCLHTRsgHOsutjYZui88qoVKYlYFee9LSCAIjda1GuQNXl0hsA6vPcThMP4Vv_f5TB32yZih1"/>
+</div>
+<div class="absolute -bottom-1 -right-1 bg-orange-600 text-black w-7 h-7 rounded-full flex items-center justify-center font-black border-2 border-black text-xs z-20">3</div>
+</div>
+<div class="w-full bg-slate-900 border-x-4 border-t-4 border-black h-16 rounded-t-xl flex flex-col items-center justify-center shadow-[4px_0px_0px_rgba(0,0,0,1)]">
+<span class="font-label-sm text-white truncate px-1">VOID_WALK</span>
+<span class="font-black text-blue-400 text-xs">715K</span>
+</div>
+</div>
+</section>
+<!-- Leaderboard List -->
+<section class="space-y-3">
+<!-- YOU Highlighted -->
+<div class="bg-secondary-fixed border-4 border-black rounded-xl p-3 flex items-center justify-between shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+<div class="flex items-center gap-4">
+<span class="font-black text-black w-6 text-center italic">124</span>
+<div class="w-10 h-10 rounded-full border-2 border-black overflow-hidden bg-slate-700">
+<img alt="Your Avatar" data-alt="Cool cyberpunk pilot avatar matching the user's current gear, glowing neon blue accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDW_J90OrjLOIzj4WO0AE0VmQnlhSMInURVwOsL7sjqTznU40qIoCVseDi_hlEteNz3S4kwyLElMkIS-WQO4c6xKlQh6ESHcbI1ZK56xVTX1zAwz7NVR5wA0WBMp42MY1hlcdkmvQd5ILUBwWGPFnch2HpZWVp6KnV09OCtD1MqOEkVV0TFyatSRIfpo-vUjrZBGF7bh1I62C3EafsHBAk56e_MZ23pXf84zVilqAB_ivu8krB-p0dhhasVgIl4NuchP9bbTTlQddaf"/>
+</div>
+<div>
+<p class="font-headline-md text-black leading-tight">YOU</p>
+<p class="font-label-sm text-black opacity-70">RANKED TOP 15%</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-black text-black">125,402</p>
+<p class="font-label-sm text-black opacity-60 uppercase text-[10px]">TAPS</p>
+</div>
+</div>
+<!-- List Divider -->
+<div class="flex items-center justify-center py-2">
+<div class="h-1 w-full bg-slate-800 rounded-full"></div>
+</div>
+<!-- Scrollable List -->
+<div class="space-y-3">
+<!-- Entry 4 -->
+<div class="bg-surface-container-high border-4 border-black rounded-xl p-3 flex items-center justify-between shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:bg-slate-800 transition-colors">
+<div class="flex items-center gap-4">
+<span class="font-black text-slate-500 w-6 text-center">4</span>
+<div class="w-10 h-10 rounded-full border-2 border-black overflow-hidden bg-slate-700">
+<img alt="Player 4" data-alt="Pixel art style robotic pilot face with glowing green scanner eyes" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFsQkusmaghmESAD0zq4S-HMuwMhBX-aBAbjiDXC9VfnbTfWZFcpHRG1KNvYLpEwCyfsou-Jui04FjKMxyplNfthI8AzL6RtK4GgCUh9k0cU9BIY0peJaiqTQSMAiRI4pxE4H4crZN0BWg4XBTdX-BbJTsvL3FkwDnplFmhGlpVZts8efg61RV4SR5yRZo6CyxhDwvIS0fkBiBAqv6f_5P24G6cuFc3AyZw-lBiqsK1e9N8cidZIBaqu3GOtkveF8rpmGx1f0Lu1XV"/>
+</div>
+<div>
+<p class="font-body-lg text-on-surface">CYBER_KID</p>
+<span class="bg-tertiary-container text-[10px] px-2 py-0.5 rounded-full font-black text-white border-2 border-black">MVP</span>
+</div>
+</div>
+<div class="text-right">
+<p class="font-black text-blue-400">698,122</p>
+<p class="font-label-sm text-slate-500 uppercase text-[10px]">TAPS</p>
+</div>
+</div>
+<!-- Entry 5 -->
+<div class="bg-surface-container-high border-4 border-black rounded-xl p-3 flex items-center justify-between shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:bg-slate-800 transition-colors">
+<div class="flex items-center gap-4">
+<span class="font-black text-slate-500 w-6 text-center">5</span>
+<div class="w-10 h-10 rounded-full border-2 border-black overflow-hidden bg-slate-700">
+<img alt="Player 5" data-alt="Futuristic pilot with a sleek white helmet and reflective blue visor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7uoeEocfII0KEZ1HTzD7-Hjv2N3qZiM_Uf41MYSSx0UtbmlwF7S1P-tmvrCEfGI4QfFc-KyBw-heQx9fl2WT9vAOn0e3K2Z9ERogU9Wbnos8jh9srZU_OlDeqrq1SOHCfbDzWz3E_aTJBZGppl5LS_wB_VbCDoKLI_qZl11HvF59N9_w8Mo417U09NEI_mrQ3fq5CQIr_kSP0HMYtl-8cOaDHChesVpjR9BZGvqXEgGjRA953KwKH8YwkQgmTc-dvLtUaWlok51rA"/>
+</div>
+<div>
+<p class="font-body-lg text-on-surface">REZO_FLY</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-black text-blue-400">542,000</p>
+<p class="font-label-sm text-slate-500 uppercase text-[10px]">TAPS</p>
+</div>
+</div>
+<!-- Entry 6 -->
+<div class="bg-surface-container-high border-4 border-black rounded-xl p-3 flex items-center justify-between shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:bg-slate-800 transition-colors">
+<div class="flex items-center gap-4">
+<span class="font-black text-slate-500 w-6 text-center">6</span>
+<div class="w-10 h-10 rounded-full border-2 border-black overflow-hidden bg-slate-700">
+<img alt="Player 6" data-alt="Cartoonish alien pilot with three eyes and a glowing tech collar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmpFArNrQub5e9dsk1hm5YTzPwBJFfR81PfWE4o9G-v9XyF3nojpus1Dz2YyVh-_blBYl3K7QNRLhQ8tD7jy7-zK5cvt7TU-oS0eBKRV2h6eUFSniGoWhKPok6ea3csOCsZtszbY85XYtu3uHYK5CL6WwuU0m5fpPeybQIsFVsW_-mfmNdgUFFgH4RhnGC9yYnt6Vj6TnEXanmNaFaDgPTokTm-9wh4org1hHAqksFBz0FxX__DsVb18WKD5qiAeOdJ7nc6FvjR07y"/>
+</div>
+<div>
+<p class="font-body-lg text-on-surface">GLITCH_V0</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-black text-blue-400">489,921</p>
+<p class="font-label-sm text-slate-500 uppercase text-[10px]">TAPS</p>
+</div>
+</div>
+<!-- Entry 7 -->
+<div class="bg-surface-container-high border-4 border-black rounded-xl p-3 flex items-center justify-between shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:bg-slate-800 transition-colors">
+<div class="flex items-center gap-4">
+<span class="font-black text-slate-500 w-6 text-center">7</span>
+<div class="w-10 h-10 rounded-full border-2 border-black overflow-hidden bg-slate-700">
+<img alt="Player 7" data-alt="Female aviator with neon pink hair and tactical cyberpunk headset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmifWMfAzj4IUYPhMxAMuMt2cAYA_57VWg5ZaxeXKE11KkDYESiGyLgE0x6VWD8LQOWHBg-qpeGQ4nhPlVw2smGaowH1xJpWnbR6skBxirIN-5dvGr1Q05bxKfYpNqscn9-u-gQ4L159inFUeD7ArJrsd11n45YYKpQOKy9_fmYBitVg8rCixxIPOGLWbLs_DxXh-Y_rRgrwdcAVAdKAWlDJBKR9sj5E2sDvHvsPjX4D1vuph_zX0zCm45HfMcsYauCaoqk0osuYrd"/>
+</div>
+<div>
+<p class="font-body-lg text-on-surface">PHANTOM</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-black text-blue-400">412,005</p>
+<p class="font-label-sm text-slate-500 uppercase text-[10px]">TAPS</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-3 bg-slate-900 border-t-4 border-black shadow-[0px_-4px_0px_0px_rgba(0,0,0,1)] rounded-t-2xl">
+<button class="flex flex-col items-center justify-center text-slate-500 opacity-80 hover:text-blue-400 transition-all active:scale-95 duration-100">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] uppercase">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-500 opacity-80 hover:text-blue-400 transition-all active:scale-95 duration-100">
+<span class="material-symbols-outlined text-2xl">insights</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] uppercase">Progress</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-500 opacity-80 hover:text-blue-400 transition-all active:scale-95 duration-100">
+<span class="material-symbols-outlined text-2xl">shopping_bag</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] uppercase">Shop</span>
+</button>
+<!-- Active Ranks -->
+<button class="flex flex-col items-center justify-center bg-[#CCFF00] text-black border-2 border-black rounded-xl px-3 py-1 scale-110 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:scale-95 transition-all duration-100">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] uppercase">Ranks</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-500 opacity-80 hover:text-blue-400 transition-all active:scale-95 duration-100">
+<span class="material-symbols-outlined text-2xl">account_circle</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] uppercase">Profile</span>
+</button>
+</nav>
+</body></html>

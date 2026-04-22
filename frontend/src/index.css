@@ -1,3 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,800&family=Space+Grotesk:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 * {
   margin: 0;
   padding: 0;
@@ -192,7 +198,7 @@ body::before {
 .section {
   display: none;
   width: 100%;
-  padding: 10px;
+  padding: 80px 10px 100px 10px;
   flex: 1;
 }
 
@@ -1618,5 +1624,38 @@ body::before {
 
   .nav-label {
     font-size: 9px;
+  }
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.tap-core-glow {
+    box-shadow: 0 0 60px 10px rgba(0, 85, 255, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.5);
+}
+.circuit-bg {
+    background-image: radial-gradient(#1d1f29 2px, transparent 2px);
+    background-size: 24px 24px;
+}
+.hard-shadow {
+    box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+}
+.hard-shadow-active:active {
+    box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 1);
+    transform: translate(2px, 2px);
+}
+
+@keyframes explode-out {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--end-x)), calc(-50% + var(--end-y))) scale(1.2) rotate(var(--rot));
+  }
+  100% {
+    transform: translate(calc(-50% + var(--end-x)), calc(-50% + var(--end-y) - 50px)) scale(1) rotate(var(--rot));
+    opacity: 0;
   }
 }

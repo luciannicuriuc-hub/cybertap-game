@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#283500",
+                        "secondary-fixed": "#c3f400",
+                        "on-secondary-container": "#556d00",
+                        "surface-container-highest": "#32343f",
+                        "surface-tint": "#b6c4ff",
+                        "on-tertiary-fixed": "#320047",
+                        "error-container": "#93000a",
+                        "on-tertiary-container": "#fadeff",
+                        "surface-container-lowest": "#0c0e17",
+                        "primary-fixed": "#dce1ff",
+                        "inverse-on-surface": "#2e303a",
+                        "secondary-container": "#c3f400",
+                        "inverse-surface": "#e1e1ef",
+                        "on-error": "#690005",
+                        "on-surface": "#e1e1ef",
+                        "outline-variant": "#434656",
+                        "surface-variant": "#32343f",
+                        "on-primary": "#002780",
+                        "inverse-primary": "#004dea",
+                        "surface-container-high": "#282933",
+                        "on-primary-container": "#e3e6ff",
+                        "tertiary-fixed": "#f8d8ff",
+                        "secondary-fixed-dim": "#abd600",
+                        "on-primary-fixed": "#001551",
+                        "on-background": "#e1e1ef",
+                        "secondary": "#ffffff",
+                        "primary": "#b6c4ff",
+                        "background": "#11131c",
+                        "on-primary-fixed-variant": "#0039b3",
+                        "surface-container-low": "#191b25",
+                        "surface-dim": "#11131c",
+                        "surface": "#11131c",
+                        "primary-container": "#0055ff",
+                        "on-tertiary": "#520071",
+                        "error": "#ffb4ab",
+                        "on-secondary-fixed": "#161e00",
+                        "outline": "#8d90a2",
+                        "tertiary": "#ecb2ff",
+                        "tertiary-fixed-dim": "#ecb2ff",
+                        "surface-container": "#1d1f29",
+                        "tertiary-container": "#a700e2",
+                        "on-secondary-fixed-variant": "#3c4d00",
+                        "on-surface-variant": "#c3c5d9",
+                        "primary-fixed-dim": "#b6c4ff",
+                        "surface-bright": "#373943",
+                        "on-tertiary-fixed-variant": "#74009f",
+                        "on-error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "gutter": "16px",
+                        "lg": "24px",
+                        "margin-safe": "20px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "unit": "4px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "display-xl": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Space Grotesk"],
+                        "headline-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "1.5", "fontWeight": "600"}],
+                        "display-xl": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "headline-md": ["24px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "500"}],
+                        "label-sm": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "800"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-glow-cyan {
+            filter: drop-shadow(0 0 8px #00F0FF);
+        }
+        .custom-glow-lime {
+            filter: drop-shadow(0 0 8px #CCFF00);
+        }
+        .hard-shadow {
+            box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+        }
+        .hard-shadow-active:active {
+            box-shadow: 0px 0px 0px 0px rgba(0,0,0,1);
+            transform: translate(2px, 2px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary-container selection:text-on-primary-container min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 h-16 bg-slate-950 border-b-4 border-black shadow-[0px_4px_0px_0px_rgba(0,0,0,1)]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden bg-surface-container-highest">
+<img alt="Avatar" class="w-full h-full object-cover" data-alt="Cartoonish pixel art avatar of a futuristic cyber pilot with neon blue visor and dark metallic helmet" src="https://lh3.googleusercontent.com/aida-public/AB6AXuADOiYmDtqPgBev0OJQ0KhSIsjm71t3uAz2dsPirGrPEFhOuH84Ge_brr01B2XJH8ta5rjoyPd2pCXsyoZ7OHd-SA2XT6REpA7A2YI-hdlZSpw56SXrC1fL5bZb-JL1gb5-yPoCG418kUj9e5oCBrGMmeFH3V0bsuSU4GNSKbYN3XxJIkBFVuDJ14NXDQjOq18PYKIPqUAoNr7vbBnnKMD4Q4nF2kpMN4kMwc9A_biocJk6d8rQECyowfCEz2p2uLdr1gDjYaV_hY76"/>
+</div>
+<h1 class="font-['Plus_Jakarta_Sans'] font-black uppercase tracking-tighter text-xl italic text-blue-500 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                CYBERTAP
+            </h1>
+</div>
+<div class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 border-2 border-black rounded-full active:translate-y-0.5 transition-transform">
+<span class="material-symbols-outlined text-secondary-fixed text-lg" style="font-variation-settings: 'FILL' 1;">diamond</span>
+<span class="font-['Plus_Jakarta_Sans'] font-black uppercase tracking-tighter text-blue-500">1,250 GEMS</span>
+</div>
+</header>
+<main class="pt-24 px-4 max-w-md mx-auto">
+<!-- Featured Banner -->
+<section class="mb-lg">
+<div class="relative w-full aspect-[21/9] rounded-2xl overflow-hidden border-4 border-black hard-shadow bg-surface-container-high group">
+<img alt="Cyber Banner" class="w-full h-full object-cover opacity-60" data-alt="Futuristic neon blue abstract digital background with high contrast geometric shapes and glowing circuit line patterns" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCagqiLJ4SX9W3kn-ge-rxw2GsEQyb0SR2Lf3jSXnmvzw1B2nkog95YbPgX2lxXMAP3KVmkmrUJ1KX44JtYV8ZP_0L4htegOpXeaJGwDo7zZhArTIq4MqzsPfJ_wGXliCmu7nVgaBBUs4sUmWFUzBlH36qM0uQOYQlU2imJ56GYBGBcaeyRPiyVSbpNq6avW5PbFrsTH65bUHIsis2NVEPjVHZDc0M4S6S-VqZWExzk82MAZ5_PgXEf672XARty1m5Ifm1-fDSAHYqK"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 flex flex-col justify-end">
+<div class="inline-flex items-center self-start mb-2 bg-tertiary-container text-white px-2 py-0.5 rounded-lg border-2 border-black text-label-sm uppercase font-label-sm">
+                        Limited Offer
+                    </div>
+<h2 class="text-headline-md font-headline-md text-white drop-shadow-md">Cyber-Skins</h2>
+<p class="text-on-surface-variant text-body-md line-clamp-1">Equip legendary neon aesthetics</p>
+</div>
+</div>
+</section>
+<!-- Upgrades Grid -->
+<section class="space-y-gutter">
+<div class="flex items-center justify-between">
+<h3 class="text-headline-md font-headline-md text-primary flex items-center gap-2">
+<span class="material-symbols-outlined">bolt</span>
+                    UPGRADES
+                </h3>
+<span class="text-label-sm font-label-sm text-outline uppercase tracking-widest">3 Items Available</span>
+</div>
+<div class="grid grid-cols-1 gap-md">
+<!-- Multi-Tap -->
+<div class="bg-surface-container p-md border-4 border-black rounded-2xl hard-shadow flex items-center gap-md">
+<div class="w-16 h-16 shrink-0 bg-primary-container/20 border-2 border-primary-container rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-primary custom-glow-cyan">touch_app</span>
+</div>
+<div class="flex-1">
+<h4 class="font-headline-md text-body-lg text-white">Multi-Tap</h4>
+<p class="text-on-surface-variant text-label-sm font-label-sm uppercase">+1 Tap Power / Level</p>
+<div class="mt-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-fixed text-sm" style="font-variation-settings: 'FILL' 1;">diamond</span>
+<span class="font-display-xl text-body-md text-secondary-fixed">500</span>
+</div>
+</div>
+<button class="bg-secondary-fixed text-on-secondary-container px-6 py-2 border-2 border-black rounded-xl font-label-sm uppercase tracking-tighter hard-shadow-active hover:brightness-110 transition-all">
+                        BUY
+                    </button>
+</div>
+<!-- Energy Cap -->
+<div class="bg-surface-container p-md border-4 border-black rounded-2xl hard-shadow flex items-center gap-md">
+<div class="w-16 h-16 shrink-0 bg-tertiary-container/20 border-2 border-tertiary-container rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-tertiary" style="font-variation-settings: 'FILL' 1;">battery_charging_80</span>
+</div>
+<div class="flex-1">
+<h4 class="font-headline-md text-body-lg text-white">Energy Cap</h4>
+<p class="text-on-surface-variant text-label-sm font-label-sm uppercase">+500 Max Energy</p>
+<div class="mt-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-fixed text-sm" style="font-variation-settings: 'FILL' 1;">diamond</span>
+<span class="font-display-xl text-body-md text-secondary-fixed">750</span>
+</div>
+</div>
+<button class="bg-secondary-fixed text-on-secondary-container px-6 py-2 border-2 border-black rounded-xl font-label-sm uppercase tracking-tighter hard-shadow-active hover:brightness-110 transition-all">
+                        BUY
+                    </button>
+</div>
+<!-- Auto-Tap Drone -->
+<div class="bg-surface-container p-md border-4 border-black rounded-2xl hard-shadow flex items-center gap-md">
+<div class="w-16 h-16 shrink-0 bg-secondary-fixed/20 border-2 border-secondary-fixed rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-secondary-fixed custom-glow-lime">precision_manufacturing</span>
+</div>
+<div class="flex-1">
+<h4 class="font-headline-md text-body-lg text-white">Auto-Tap Drone</h4>
+<p class="text-on-surface-variant text-label-sm font-label-sm uppercase">Taps while idle</p>
+<div class="mt-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-fixed text-sm" style="font-variation-settings: 'FILL' 1;">diamond</span>
+<span class="font-display-xl text-body-md text-secondary-fixed">2.5K</span>
+</div>
+</div>
+<button class="bg-surface-container-highest text-outline px-6 py-2 border-2 border-black rounded-xl font-label-sm uppercase tracking-tighter opacity-50 cursor-not-allowed">
+                        LOCKED
+                    </button>
+</div>
+</div>
+</section>
+<!-- Extra Items / Consumables -->
+<section class="mt-xl">
+<h3 class="text-headline-md font-headline-md text-tertiary flex items-center gap-2 mb-gutter">
+<span class="material-symbols-outlined">auto_fix_high</span>
+                CONSUMABLES
+            </h3>
+<div class="grid grid-cols-2 gap-md">
+<div class="bg-surface-container-low border-2 border-black rounded-2xl p-sm flex flex-col items-center text-center">
+<span class="material-symbols-outlined text-3xl text-primary mb-2">rocket_launch</span>
+<span class="font-headline-md text-body-md text-white">Boost 2x</span>
+<span class="text-label-sm font-label-sm text-secondary-fixed mt-1">100 GEMS</span>
+<button class="w-full mt-sm bg-primary-container text-white py-1.5 rounded-lg border-2 border-black font-label-sm uppercase active:scale-95 transition-transform">Get</button>
+</div>
+<div class="bg-surface-container-low border-2 border-black rounded-2xl p-sm flex flex-col items-center text-center">
+<span class="material-symbols-outlined text-3xl text-tertiary mb-2">emergency_home</span>
+<span class="font-headline-md text-body-md text-white">Refill</span>
+<span class="text-label-sm font-label-sm text-secondary-fixed mt-1">250 GEMS</span>
+<button class="w-full mt-sm bg-primary-container text-white py-1.5 rounded-lg border-2 border-black font-label-sm uppercase active:scale-95 transition-transform">Get</button>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-3 bg-slate-900 border-t-4 border-black shadow-[0px_-4px_0px_0px_rgba(0,0,0,1)] rounded-t-2xl">
+<a class="flex flex-col items-center justify-center text-slate-500 opacity-80 hover:text-blue-400 transition-all active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] uppercase">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 opacity-80 hover:text-blue-400 transition-all active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="insights">insights</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] uppercase">Progress</span>
+</a>
+<!-- Active Tab: Shop -->
+<a class="flex flex-col items-center justify-center bg-[#CCFF00] text-black border-2 border-black rounded-xl px-3 py-1 scale-110 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] uppercase">Shop</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 opacity-80 hover:text-blue-400 transition-all active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="military_tech">military_tech</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] uppercase">Ranks</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 opacity-80 hover:text-blue-400 transition-all active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] uppercase">Profile</span>
+</a>
+</nav>
+</body></html>

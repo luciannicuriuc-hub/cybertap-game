@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Quest Master - Ranks</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#edb1ff",
+                        "surface-container-highest": "#3d2e52",
+                        "primary-fixed-dim": "#ecc200",
+                        "secondary": "#edb1ff",
+                        "surface-container": "#27183b",
+                        "on-tertiary-fixed": "#351000",
+                        "on-surface-variant": "#d1c6ab",
+                        "on-error": "#690005",
+                        "background": "#1a0b2e",
+                        "on-secondary-container": "#e498ff",
+                        "on-tertiary-fixed-variant": "#7a3000",
+                        "on-background": "#eddcff",
+                        "on-primary-fixed-variant": "#564500",
+                        "tertiary-container": "#ffcbb4",
+                        "surface-bright": "#413257",
+                        "surface": "#1a0b2e",
+                        "on-secondary": "#520070",
+                        "surface-container-low": "#231437",
+                        "on-secondary-fixed": "#320046",
+                        "primary-fixed": "#ffe07c",
+                        "outline-variant": "#4d4632",
+                        "secondary-fixed": "#f9d8ff",
+                        "primary-container": "#ffd200",
+                        "on-primary-container": "#705b00",
+                        "surface-tint": "#ecc200",
+                        "on-tertiary-container": "#9e3f00",
+                        "on-error-container": "#ffdad6",
+                        "primary": "#fff2d1",
+                        "surface-container-high": "#322346",
+                        "on-tertiary": "#561f00",
+                        "surface-variant": "#3d2e52",
+                        "surface-container-lowest": "#150629",
+                        "on-secondary-fixed-variant": "#6e208c",
+                        "outline": "#999077",
+                        "inverse-on-surface": "#38294d",
+                        "on-surface": "#eddcff",
+                        "tertiary-fixed": "#ffdbcc",
+                        "on-primary": "#3b2f00",
+                        "surface-dim": "#1a0b2e",
+                        "inverse-surface": "#eddcff",
+                        "inverse-primary": "#725c00",
+                        "error": "#ffb4ab",
+                        "on-primary-fixed": "#231b00",
+                        "tertiary-fixed-dim": "#ffb693",
+                        "secondary-container": "#6e208c",
+                        "tertiary": "#ffefea",
+                        "error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "12px",
+                        "safe-margin": "24px",
+                        "lg": "32px",
+                        "xs": "4px",
+                        "md": "20px",
+                        "base": "8px",
+                        "xl": "48px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Be Vietnam Pro"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-xl": ["Plus Jakarta Sans"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Be Vietnam Pro"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "800"}],
+                        "headline-xl": ["40px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "body-lg": ["18px", {"lineHeight": "1.5", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "label-sm": ["12px", {"lineHeight": "1.2", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glossy-overlay {
+            background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 50%);
+        }
+        .podium-bounce {
+            animation: bounce 2s infinite ease-in-out;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen font-body-md overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="bg-slate-900 dark:bg-black docked full-width top-0 border-b-4 border-slate-800 dark:border-zinc-900 drop-shadow-[0_4px_0_rgba(0,0,0,1)] z-50 sticky">
+<div class="flex justify-between items-center w-full px-6 py-4 max-w-md mx-auto">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full border-2 border-[#FFD200] overflow-hidden bg-slate-800">
+<img alt="User avatar" data-alt="Stylized gaming avatar of a hero wearing a golden crown with a confident expression, cartoon style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAGfiNKiJ0GKTac358T8nwxHcdUQyEBzx6tr1PlGmekgptNx34GWzRUWhcQMAhI4hiNlifau17_B5U2RKoSl3lqAyfZHMhNlR0bNEhUdXTdG63VShlQDhc35GsCVyHIn1GRTRsWaGcRW0WDl3tah1GhrCRx3xsmJiWo6Ztkx4PGvlJPxJUC50KVr5M6-doo63pUEqMQI9E8baSt1pAKqTf75cU-vAScYKzORmkTmDLqKMc6ecpkB_FFNKBR8Pv2uFHH5nddW8bh-a-"/>
+</div>
+<h1 class="font-['Plus_Jakarta_Sans'] font-black uppercase tracking-wider text-2xl text-[#FFD200] italic">QUEST_MASTER</h1>
+</div>
+<div class="bg-slate-800 px-3 py-1 rounded-full border-2 border-slate-700 flex items-center gap-1 hover:scale-105 active:scale-95 transition-transform cursor-pointer">
+<span class="text-[#FFD200] font-black">1,250</span>
+<span class="text-sm">💎</span>
+</div>
+</div>
+</header>
+<main class="max-w-md mx-auto px-safe-margin pt-base pb-32">
+<!-- Podium Section -->
+<section class="mt-8 mb-12">
+<h2 class="font-headline-lg text-headline-lg text-center mb-8 text-primary drop-shadow-[0_4px_0_rgba(0,0,0,0.5)]">TOP PLAYERS</h2>
+<div class="flex items-end justify-center gap-2 h-64">
+<!-- Rank 2 -->
+<div class="flex flex-col items-center w-1/3">
+<div class="relative mb-2">
+<div class="w-16 h-16 rounded-full border-4 border-slate-400 overflow-hidden bg-surface-container-high p-1">
+<img alt="Silver Player" data-alt="Cartoon avatar of a female warrior with silver armor and blue hair, vibrant gaming style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIxItPLcbiG2x3to8efh1JciNpGlfw_x5onD223j59yic-kxyJq_B12KeXC1MsdKK8U5jOKg5JFlXrJELTfH88TR1siDZu3bliv9R-7uKnFijpab2bXsHFsPFaCfisMYBMcY6m6U8dCE6Z320m4FA-LVNP00Dll76OpN-GEOYa9opX-7azez0kUN5F45Xnt8jdVkHsAVA9mmL--9_Fh6IL2YUMfzWfP8jZqubzSYgpxdjJfcM-GBKdSOYbMn28DlcRjquJ7RE_CECQ"/>
+</div>
+<div class="absolute -top-2 -right-2 bg-slate-400 text-slate-900 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center font-black">2</div>
+</div>
+<div class="w-full bg-slate-500 h-24 rounded-t-2xl border-x-4 border-t-4 border-slate-600 relative overflow-hidden flex flex-col items-center justify-center shadow-[0_8px_0_rgba(0,0,0,0.3)]">
+<div class="glossy-overlay absolute inset-0"></div>
+<span class="font-headline-md text-white drop-shadow-md">Silver</span>
+<span class="text-label-sm font-label-sm text-slate-200">14.2k</span>
+</div>
+</div>
+<!-- Rank 1 -->
+<div class="flex flex-col items-center w-1/3 podium-bounce">
+<div class="relative mb-2">
+<div class="w-20 h-20 rounded-full border-4 border-[#FFD200] overflow-hidden bg-surface-container-high p-1 shadow-[0_0_20px_rgba(255,210,0,0.4)]">
+<img alt="Gold Player" data-alt="Cartoon avatar of a legendary knight with golden glowing eyes and dragon-themed helmet, vibrant colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKux-GfBdzMoMNwFaENbyqriR89e-0KG3Ob694osbk-fojhIIUZ-L8EWWQ4rGseCewuDA4-ZZVd2mEtKYhYjrFkjTKYuVNZSR_D3Jus9FCkqEw9sBoRFsc8KDl3XxcakQah_-AtqbPkOOOdv4arYDKpC-liF0f6pcJ96q8s3DS7_PNxJdRjReqEdex_8roH4vT_tRgijPjHCbSGhFHuofF6CyPWa7fp96IUCWQlcjZD0pz-MnYizpPBztj2Qd1lLVmB4KB6v9Y1xjm"/>
+</div>
+<div class="absolute -top-3 -right-2 bg-[#FFD200] text-slate-900 w-10 h-10 rounded-full border-2 border-white flex items-center justify-center font-black animate-pulse">1</div>
+</div>
+<div class="w-full bg-[#FFD200] h-32 rounded-t-2xl border-x-4 border-t-4 border-[#b29300] relative overflow-hidden flex flex-col items-center justify-center shadow-[0_12px_0_rgba(0,0,0,0.3)]">
+<div class="glossy-overlay absolute inset-0"></div>
+<span class="font-headline-md text-slate-900 uppercase">Aria</span>
+<span class="text-label-sm font-label-sm text-on-primary-container">18.5k</span>
+</div>
+</div>
+<!-- Rank 3 -->
+<div class="flex flex-col items-center w-1/3">
+<div class="relative mb-2">
+<div class="w-16 h-16 rounded-full border-4 border-orange-700 overflow-hidden bg-surface-container-high p-1">
+<img alt="Bronze Player" data-alt="Cartoon avatar of a rugged adventurer with a leather hat and bronze compass, warm sunset lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0u7_BYirkFPE4Trk-mSG7DEq9wEVPKSzS_-fPB5EAylBX6UjNfMZn8lVK7nExemERdJAAI7qS4bfXfif5exHpSkNtkUmvhBN3O-x2Xb-FYS9zsGYQhSgROxRwJibKmjtF8qRqwJQySdj1zVJVupreWmIK6lyeeOiPa1PWcPExdSdh-zqlE84VRPQoNOM5iUWcwyVJ81xn6isijWi836mXTRyMVPttbBzI_5_j9JlMVJvuLhzaf1kZOmXWYyobjW1RSFFhYWbD-OYD"/>
+</div>
+<div class="absolute -top-2 -right-2 bg-orange-700 text-white w-8 h-8 rounded-full border-2 border-white flex items-center justify-center font-black">3</div>
+</div>
+<div class="w-full bg-orange-800 h-20 rounded-t-2xl border-x-4 border-t-4 border-orange-950 relative overflow-hidden flex flex-col items-center justify-center shadow-[0_8px_0_rgba(0,0,0,0.3)]">
+<div class="glossy-overlay absolute inset-0"></div>
+<span class="font-headline-md text-white drop-shadow-md">Rex</span>
+<span class="text-label-sm font-label-sm text-orange-200">12.1k</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Ranking List -->
+<section class="space-y-4">
+<!-- Header for list -->
+<div class="flex justify-between px-6 py-2 bg-surface-container-high rounded-xl border-2 border-surface-container-highest">
+<span class="text-label-sm font-label-sm text-on-surface-variant">RANK &amp; PLAYER</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">SCORE</span>
+</div>
+<!-- Rank 4 -->
+<div class="flex items-center gap-4 bg-slate-900 p-4 rounded-2xl border-b-4 border-slate-950 hover:translate-y-[-2px] transition-transform group">
+<span class="font-headline-md text-slate-500 w-8">4</span>
+<div class="w-12 h-12 rounded-full border-2 border-slate-700 overflow-hidden">
+<img alt="Player 4" data-alt="Digital art of a futuristic character with neon visor and dark background, high contrast" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvuhM8xQIzZkG4_f_RcO_Wu4cdMLiJ4xwHNjJXK68Ov_LoYjqsmxrDCDj-yBnQp8Bu1lJGw7sXNI0Z3HycsrYx7upFRztem32oQMxb3BqFn9jd8XAvwXtyQ7_gHHuyIPRMvxJ-kqflptr8fbvUk2TtxUoe-UCKqy6mud1vJgnisZCsrVE76yn11e3eoYamNKRRPRYNHJ2aur2C1clOH0iDSoT-eZ67SohDrC_EuYRH91ZsonEmsfEvD_dpvmrHJbxi6DTdoH8z6pJv"/>
+</div>
+<div class="flex-1">
+<p class="font-headline-md text-body-lg text-on-background">VALKYRIE</p>
+<p class="text-label-sm text-slate-400">Master League</p>
+</div>
+<div class="text-right">
+<p class="font-headline-md text-[#FFD200]">9,840</p>
+</div>
+</div>
+<!-- Rank 5 -->
+<div class="flex items-center gap-4 bg-slate-900 p-4 rounded-2xl border-b-4 border-slate-950 hover:translate-y-[-2px] transition-transform">
+<span class="font-headline-md text-slate-500 w-8">5</span>
+<div class="w-12 h-12 rounded-full border-2 border-slate-700 overflow-hidden">
+<img alt="Player 5" data-alt="Cartoon ninja character with glowing green eyes and dark robes, stylized smoke background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgxSIuilm6OixCzTaHkKw7usDpJVMg1LYHaXKXf5bkihibB0B7dnFLFdsb09C80ak0Rs3ynMiqqn0wYoDSPF_9qWGSAw_VAiuTiZuGujGb-jypJpBdVCztWjL5c7xnsaEqPzpZClYz-zQtHVLa_x3ZKbvHQVh0ODHftmwuA0q3yNKIQWbNjaPUB7P7Qr7o-48HQi-xByjfijDFvuW7EaPMP8RloxyzSRCwDuBqm0qSJ1Q_QThq4KbDXI8VvEG6C7i_UY9URuRsATus"/>
+</div>
+<div class="flex-1">
+<p class="font-headline-md text-body-lg text-on-background">KODX</p>
+<p class="text-label-sm text-slate-400">Elite Scout</p>
+</div>
+<div class="text-right">
+<p class="font-headline-md text-[#FFD200]">8,720</p>
+</div>
+</div>
+<!-- Current User Row (Highlighted) -->
+<div class="flex items-center gap-4 bg-[#6e208c] p-4 rounded-2xl border-b-4 border-[#320046] shadow-[0_0_15px_rgba(110,32,140,0.5)]">
+<span class="font-headline-md text-secondary w-8">42</span>
+<div class="w-12 h-12 rounded-full border-2 border-secondary overflow-hidden bg-slate-900">
+<img alt="Current User" data-alt="Avatar of a brave knight hero with a shining gold crown and confident smile, game style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1xEimuUKuGAB7rFmLxZOgl8ndJeC8N_fbQN9sTXCDXLvR_KZligHpUfC-gwHST3OnzVdXgJ86zS3_4b5KfdWx0bZRICh3AssijI7xvray8mQK4M-SLlJ-XjPP2H3cEnpviG9hgiWqbMSSShPAQiXCdWnB3G0eEFgt_n72YQ82oqSvTrLRcpeUC9GQP46ZJQ5wT7U9ZMxHabaey2cXXX5D_LFK50u4L2vHOfcqgxJQDvCqo1pCvJwUwXzLof3AxgugTK91tv6eqOZ8"/>
+</div>
+<div class="flex-1">
+<p class="font-headline-md text-body-lg text-white">YOU</p>
+<p class="text-label-sm text-secondary">Quest Apprentice</p>
+</div>
+<div class="text-right">
+<p class="font-headline-md text-[#FFD200]">1,250</p>
+</div>
+</div>
+<!-- Rank 6 -->
+<div class="flex items-center gap-4 bg-slate-900 p-4 rounded-2xl border-b-4 border-slate-950 hover:translate-y-[-2px] transition-transform">
+<span class="font-headline-md text-slate-500 w-8">6</span>
+<div class="w-12 h-12 rounded-full border-2 border-slate-700 overflow-hidden">
+<img alt="Player 6" data-alt="Enchantress character with purple magic effects and mystical background, soft glowing light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxIGFLWWc-rXOTzRuWOPoiLNymqYIszVPGnihgYp-8JWdOUft26DYeODCmiONyjPfts4flyF-0QA7kjfIvUCmv-IUSsFBIeFBmlnnLfTrkaHvKIEbFmTYNPL8VbVDt6fHRoqMq8WaZPBmMCUJPGp6Z915mBLambJRQs4ddi8cyUO2aHSWiThF3VYg5c4_UXjUHyHy5fMkNkTjMEJZBUC4Skl85kVaoGjezgAebBAC9OCAg7IQucFgB34IAjGRnOJZ4ZLDGAjQkYzYF"/>
+</div>
+<div class="flex-1">
+<p class="font-headline-md text-body-lg text-on-background">ZEPHYR</p>
+<p class="text-label-sm text-slate-400">Veteran Rogue</p>
+</div>
+<div class="text-right">
+<p class="font-headline-md text-[#FFD200]">7,910</p>
+</div>
+</div>
+<!-- Rank 7 -->
+<div class="flex items-center gap-4 bg-slate-900 p-4 rounded-2xl border-b-4 border-slate-950 hover:translate-y-[-2px] transition-transform">
+<span class="font-headline-md text-slate-500 w-8">7</span>
+<div class="w-12 h-12 rounded-full border-2 border-slate-700 overflow-hidden">
+<img alt="Player 7" data-alt="Cyberpunk character with robotic arm and yellow tech background, bold chunky lines" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaNHU6zNFutU9rnNEGr1TkL_rj6o4M9yjJ1n4bYHJjbXQBPoGDSMt9DSqq-_BeMm9iyCv6Hh726jdCfpJVcbehOcJKF1rsOQsVdx-JoEWcbUFR6vcQ_S25i8pNRAD8b-kyNPnJgskEACIWppHSCkpdeYzoUuanyvSq2E_oeqpmE3dVRneX7tvi_knkUzjX4sJ7x5Bk7HT31ydLQr4oDeo8Tb01KepJYWfJM8mWgrSAqtcMC0S9lmOQKbJlQ6BRCXcUSGQI4PXOg6gY"/>
+</div>
+<div class="flex-1">
+<p class="font-headline-md text-body-lg text-on-background">MAXIMUS</p>
+<p class="text-label-sm text-slate-400">Gladiator</p>
+</div>
+<div class="text-right">
+<p class="font-headline-md text-[#FFD200]">7,400</p>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-end px-4 pb-6 pt-2 bg-slate-900 dark:bg-zinc-950 border-t-4 border-slate-800 dark:border-zinc-900 shadow-[0_-8px_0_rgba(0,0,0,0.25)] rounded-t-[32px]">
+<!-- Dashboard -->
+<a class="flex flex-col items-center justify-center text-slate-400 p-2 hover:text-[#FFD200] transition-colors group" href="#">
+<span class="material-symbols-outlined text-2xl" data-icon="grid_view">grid_view</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] tracking-tighter uppercase">DASHBOARD</span>
+</a>
+<!-- Shop -->
+<a class="flex flex-col items-center justify-center text-slate-400 p-2 hover:text-[#FFD200] transition-colors group" href="#">
+<span class="material-symbols-outlined text-2xl" data-icon="shopping_cart">shopping_cart</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] tracking-tighter uppercase">SHOP</span>
+</a>
+<!-- Ranks (Active) -->
+<a class="flex flex-col items-center justify-center bg-[#FFD200] text-slate-900 rounded-2xl px-4 py-2 translate-y-[-8px] shadow-[0_4px_0_#b29300] transition-all" href="#">
+<span class="material-symbols-outlined text-2xl" data-icon="leaderboard" style="font-variation-settings: 'FILL' 1;">leaderboard</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] tracking-tighter uppercase">RANKS</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-slate-400 p-2 hover:text-[#FFD200] transition-colors group" href="#">
+<span class="material-symbols-outlined text-2xl" data-icon="person">person</span>
+<span class="font-['Plus_Jakarta_Sans'] font-extrabold text-[10px] tracking-tighter uppercase">PROFILE</span>
+</a>
+</nav>
+</body></html>
