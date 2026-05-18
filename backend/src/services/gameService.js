@@ -1,13 +1,25 @@
 const { pool } = require('../config/db');
 const { getOrCreateUser, calculateOfflineEarnings } = require('./userService');
 const { accrueRevenueForPoints } = require('./solanaService');
+const { incrementSeasonScore } = require('./seasonService');
+const { incrementTournamentScores } = require('./tournamentService');
+const { getActiveLeagueGroup } = require('./characterService');
 
 async function applyTap({ telegramId, taps, tapValue }) {
     await getOrCreateUser(telegramId, null, 'Player');
 
     const validTaps = Math.min(parseInt(taps, 10) || 1, 200);
     const validTapValue = Math.min(parseInt(tapValue, 10) || 1, 1000);
-    const totalPoints = validTaps * validTapValue;
+
+    // Apply active boost multiplier from DB so backend stays the source of truth
+    const stateRes = await pool.query(
+        `SELECT boost_multiplier, boost_until FROM users WHERE telegram_id = $1`,
+        [telegramId]
+    );
+    const boostUntil = Number(stateRes.rows[0]?.boost_until || 0);
+    const boostMultiplier = boostUntil > Date.now() ? Math.max(1, Number(stateRes.rows[0]?.boost_multiplier || 1)) : 1;
+
+    const totalPoints = validTaps * validTapValue * boostMultiplier;
 
     await pool.query(`
         UPDATE users SET
@@ -18,6 +30,12 @@ async function applyTap({ telegramId, taps, tapValue }) {
 
     await accrueRevenueForPoints(telegramId, totalPoints);
 
+    const leagueGroup = await getActiveLeagueGroup(telegramId);
+    await Promise.all([
+        incrementSeasonScore(telegramId, leagueGroup, totalPoints),
+        incrementTournamentScores(telegramId, validTaps),
+    ]);
+
     const { rows } = await pool.query(
         'SELECT points, total_points FROM users WHERE telegram_id = $1',
         [telegramId]
@@ -26,6 +44,7 @@ async function applyTap({ telegramId, taps, tapValue }) {
     return {
         points: rows[0]?.points || 0,
         total_points: rows[0]?.total_points || 0,
+        boost_multiplier: boostMultiplier,
     };
 }
 

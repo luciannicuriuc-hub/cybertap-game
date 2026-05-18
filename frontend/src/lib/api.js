@@ -103,6 +103,138 @@ export const api = {
       body: JSON.stringify({ telegramId, reward, points, special }),
     });
   },
+
+  // --- Tokens ---
+  listTokens() {
+    return request('/api/tokens');
+  },
+
+  // --- Season / leaderboard prizes ---
+  getSeason() {
+    return request('/api/season');
+  },
+  getSeasonLeaderboard(league = 'global', limit = 100) {
+    return request(`/api/season/leaderboard?league=${encodeURIComponent(league)}&limit=${limit}`);
+  },
+  getSeasonRank(telegramId, league = 'global') {
+    return request(`/api/season/rank/${telegramId}?league=${encodeURIComponent(league)}`);
+  },
+
+  // --- Tournaments ---
+  listTournaments() {
+    return request('/api/tournaments');
+  },
+  getTournament(id) {
+    return request(`/api/tournaments/${id}`);
+  },
+  getMyTournaments(telegramId) {
+    return request(`/api/tournaments/me/${telegramId}`);
+  },
+  joinTournament(telegramId, tournamentId, signature = null, senderAddress = null) {
+    return request('/api/tournaments/join', {
+      method: 'POST',
+      body: JSON.stringify({ telegramId, tournamentId, signature, senderAddress }),
+    });
+  },
+
+  // --- Follow missions ---
+  listFollowMissions(telegramId) {
+    return request(`/api/follow_missions/${telegramId}`);
+  },
+  startFollowMission(telegramId, missionId) {
+    return request('/api/follow_missions/start', {
+      method: 'POST',
+      body: JSON.stringify({ telegramId, missionId }),
+    });
+  },
+  claimFollowMission(telegramId, missionId) {
+    return request('/api/follow_missions/claim', {
+      method: 'POST',
+      body: JSON.stringify({ telegramId, missionId }),
+    });
+  },
+
+  // --- Ads ---
+  getAdConfig(telegramId) {
+    return request(`/api/ads/config/${telegramId}`);
+  },
+  rewardForAdView(telegramId, payload = {}) {
+    return request('/api/ads/reward', {
+      method: 'POST',
+      body: JSON.stringify({ telegramId, ...payload }),
+    });
+  },
+
+  // --- Chests ---
+  listChests() {
+    return request('/api/chests');
+  },
+  openChest(telegramId, chestId, signature = null, senderAddress = null) {
+    return request('/api/chests/open', {
+      method: 'POST',
+      body: JSON.stringify({ telegramId, chestId, signature, senderAddress }),
+    });
+  },
+  getChestHistory(telegramId) {
+    return request(`/api/chests/history/${telegramId}`);
+  },
+
+  // --- Referral tiers ---
+  getReferralProgress(telegramId) {
+    return request(`/api/referrals/${telegramId}`);
+  },
+  claimReferralTier(telegramId, tier) {
+    return request('/api/referrals/claim', {
+      method: 'POST',
+      body: JSON.stringify({ telegramId, tier }),
+    });
+  },
+
+  // --- Auto-clicker ---
+  getAutoClickerStatus(telegramId) {
+    return request(`/api/autoclicker/${telegramId}`);
+  },
+  activateAutoClicker(telegramId, payload = {}) {
+    return request('/api/autoclicker/activate', {
+      method: 'POST',
+      body: JSON.stringify({ telegramId, ...payload }),
+    });
+  },
+  collectAutoClicker(telegramId) {
+    return request('/api/autoclicker/collect', {
+      method: 'POST',
+      body: JSON.stringify({ telegramId }),
+    });
+  },
+
+  // --- Characters ---
+  listCharacters() {
+    return request('/api/characters');
+  },
+  listMyCharacters(telegramId) {
+    return request(`/api/characters/mine/${telegramId}`);
+  },
+  selectCharacter(telegramId, characterId) {
+    return request('/api/characters/select', {
+      method: 'POST',
+      body: JSON.stringify({ telegramId, characterId }),
+    });
+  },
+
+  // --- Raffles ---
+  listRaffles() {
+    return request('/api/raffles');
+  },
+  getRaffle(id, telegramId = null) {
+    const suffix = telegramId ? `?telegramId=${telegramId}` : '';
+    return request(`/api/raffles/${id}${suffix}`);
+  },
+  buyRaffleTickets(telegramId, raffleId, ticketCount, payWith = 'points', signature = null, senderAddress = null) {
+    return request('/api/raffles/buy', {
+      method: 'POST',
+      body: JSON.stringify({ telegramId, raffleId, ticketCount, payWith, signature, senderAddress }),
+    });
+  },
 };
 
 export function normalizeUser(source = {}) {

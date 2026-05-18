@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx vite *)",
+      "Bash(npm install *)",
+      "Bash(node -c src/database/migrate.js)",
+      "Bash(node -c src/services/tokenService.js)",
+      "Bash(node -c src/services/seasonService.js)",
+      "Bash(node -c src/services/tournamentService.js)",
+      "Bash(node -c src/services/followMissionService.js)",
+      "Bash(node -c index.js)",
+      "Bash(node -c src/app.js)",
+      "Bash(node -c src/services/gameService.js)",
+      "Bash(node -c src/services/userService.js)"
+    ]
+  }
+}

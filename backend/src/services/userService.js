@@ -100,10 +100,19 @@ async function getUserProfile(telegramId) {
         ORDER BY u.category, u.base_cost
     `, [telegramId]);
 
+    const charactersRes = await pool.query(`
+        SELECT c.*, uc.acquired_at IS NOT NULL AS owned
+        FROM characters c
+        LEFT JOIN user_characters uc
+          ON uc.character_id = c.id AND uc.telegram_id = $1
+    `, [telegramId]);
+
     return {
         ...user,
         offline_earnings: offlineEarnings,
         upgrades: upgradesRes.rows,
+        characters: charactersRes.rows,
+        boost_active: Number(user.boost_until || 0) > Date.now(),
     };
 }
 

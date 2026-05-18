@@ -1,5 +1,27 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from './lib/api';
+import FeatureOverlay from './components/FeatureOverlay';
+import SideRail from './components/SideRail';
+import OrbitingDecor from './components/OrbitingDecor';
+import LiveEventsBanner from './components/LiveEventsBanner';
+import BottomTeaserStrip from './components/BottomTeaserStrip';
+import {
+  IconTrophy, IconSwords, IconChest, IconTicket,
+  IconAntenna, IconAd, IconGear, IconMask,
+  IconUsers, IconCoin,
+} from './components/GameIcons';
+import {
+  PrizeLeaderboardPanel,
+  TournamentsPanel,
+  FollowMissionsPanel,
+  AdsPanel,
+  ChestsPanel,
+  ReferralTiersPanel,
+  AutoClickerPanel,
+  CharactersPanel,
+  RafflesPanel,
+  TokenPickerPanel,
+} from './components/FeaturePanels';
 
 const appName = import.meta.env.APP_NAME || import.meta.env.VITE_APP_NAME || 'CyberTap';
 const botName = (import.meta.env.TELEGRAM_BOT_NAME || import.meta.env.VITE_TELEGRAM_BOT_NAME || '').replace(/^@/, '').trim();
@@ -226,6 +248,9 @@ function App() {
   const [walletLinkChallengeExpiresAt, setWalletLinkChallengeExpiresAt] = useState(0);
   const [walletManualAddress, setWalletManualAddress] = useState('');
   const [walletManualSignature, setWalletManualSignature] = useState('');
+  const [activeOverlay, setActiveOverlay] = useState(null);
+  const [activeCharacterId, setActiveCharacterId] = useState('rookie');
+  const [boostUntilFromServer, setBoostUntilFromServer] = useState(0);
 
   const canvasRef = useRef(null);
   const animationFrameRef = useRef(0);
@@ -1116,6 +1141,8 @@ function App() {
         setEnergyRegen(nextEnergyRegen);
         setWalletAddress(nextWalletAddress);
         setWalletVerifiedAt(nextWalletVerifiedAt);
+        if (data.active_character_id) setActiveCharacterId(data.active_character_id);
+        if (Number(data.boost_until || 0) > 0) setBoostUntilFromServer(Number(data.boost_until));
         setRevenueEarnedLamports(nextRevenueEarnedLamports);
         setRevenueClaimedLamports(nextRevenueClaimedLamports);
         setWalletClaimCount(nextWalletClaimCount);
@@ -1272,23 +1299,32 @@ function App() {
 
       {levelPopup ? <div className="level-popup">{levelPopup}</div> : null}
 
-      <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 h-16 bg-slate-950 border-b-4 border-black shadow-[0px_4px_0px_0px_rgba(0,0,0,1)]">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full border-2 border-primary-container overflow-hidden bg-surface-container">
-            <img alt="User Pilot Avatar" data-alt="close-up 3d render of a futuristic cyber pilot avatar wearing a glowing neon visor and sleek chrome armor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATpbd59qTvWL9C-7-G5pVBJLY45WeToWxg6ljs1cTjVrpREdjx24kynVcjiaWZTarCQqDvn2eIWdCpbkhBsQfxmDy1uoH8ASDpJ-NLcmilmbdHaGUvHPKUn4b_WEUM3IDxUGB7IB0IdRKqKrADfu6xcUc73tNdImgRALFmzbcPmuFJHWIt1nTAkijJulY9pAC2KiTnnayM3wA2Qjj_xA2pI53gDOfePZJCYQLPwhlvfJ636hjaB593zmnlUaLHI5wXIWgJO9uFdH3y"/>
+      <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-3 h-14 bg-slate-950/95 backdrop-blur-sm border-b-2 border-black shadow-[0px_3px_0px_0px_rgba(0,0,0,1)]">
+        <button type="button" onClick={() => switchTab('profile')} className="flex items-center gap-2 active:scale-95 transition-transform">
+          <div className="w-9 h-9 rounded-xl border-2 border-emerald-400/60 bg-slate-900 flex items-center justify-center shadow-[0_0_10px_rgba(0,255,136,0.4)]">
+            <span className="text-lg">{(currentLeague?.icon) || '🥉'}</span>
           </div>
-          <div className="flex flex-col">
-            <h1 className="font-['Plus_Jakarta_Sans'] font-black uppercase tracking-tighter text-xl italic drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] text-blue-500">{username}</h1>
-            <span className={`text-[10px] font-black uppercase tracking-wider ${backendHealth === 'online' ? 'text-primary' : backendHealth === 'degraded' ? 'text-accent' : 'text-danger'}`}>
-              API {backendHealth === 'online' ? 'Online' : backendHealth === 'degraded' ? 'Degraded' : backendHealth === 'offline' ? 'Offline' : 'Checking'}
+          <div className="flex flex-col leading-none">
+            <span className="font-['Plus_Jakarta_Sans'] font-black uppercase tracking-tight text-sm italic text-white max-w-[120px] truncate">{username}</span>
+            <span className={`text-[9px] font-black uppercase tracking-wider mt-0.5 ${backendHealth === 'online' ? 'text-emerald-400' : backendHealth === 'degraded' ? 'text-amber-400' : 'text-rose-400'}`}>
+              {backendHealth === 'online' ? '● online' : backendHealth === 'degraded' ? '● degraded' : backendHealth === 'offline' ? '● offline' : '● ...'}
             </span>
           </div>
-        </div>
-        <div className="flex items-center gap-2 bg-slate-900 border-2 border-black rounded-lg px-3 py-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-          <span className="material-symbols-outlined text-secondary-fixed" style={{ fontVariationSettings: "'FILL' 1" }}>diamond</span>
-          <span className="font-['Plus_Jakarta_Sans'] font-black uppercase tracking-tighter text-blue-500">
-            {isBootstrapping ? '...' : formatNumber(points)} PTS
-          </span>
+        </button>
+
+        <div className="flex items-center gap-1.5">
+          {boostActive ? (
+            <span className="flex items-center gap-1 bg-amber-400/15 border-2 border-amber-400/60 rounded-lg px-2 py-1 shadow-[0_0_10px_rgba(255,210,0,0.4)] animate-pulse">
+              <span className="text-amber-300 text-sm leading-none">⚡</span>
+              <span className="text-amber-300 font-black text-[10px]">×{boostMultiplier}</span>
+            </span>
+          ) : null}
+          <div className="flex items-center gap-1.5 bg-slate-900 border-2 border-black rounded-lg px-2.5 py-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+            <span className="text-cyan-300 text-base leading-none">💎</span>
+            <span className="font-['Plus_Jakarta_Sans'] font-black uppercase tracking-tighter text-sm text-cyan-300">
+              {isBootstrapping ? '...' : formatNumber(points)}
+            </span>
+          </div>
         </div>
       </header>
 
@@ -1298,111 +1334,125 @@ function App() {
         </div>
       ) : null}
 
-      <section id="section-game" className={`${activeTab === 'game' ? 'block' : 'hidden'} pt-24 pb-32 px-4 max-w-md mx-auto flex flex-col gap-8 w-full`}>
-        {/* Stats Section */}
-        <section className="grid grid-cols-3 gap-3">
-          <div className="bg-surface-container border-2 border-black hard-shadow p-3 rounded-xl flex flex-col items-center">
-            <span className="text-[10px] font-black text-outline mb-1 uppercase">Gems</span>
-            <div className="flex items-center gap-1">
-              <span className="material-symbols-outlined text-secondary-fixed text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>diamond</span>
-              <span className="text-xl font-black text-secondary-fixed">{isBootstrapping ? '...' : formatNumber(points)}</span>
+      <section id="section-game" className={`${activeTab === 'game' ? 'block' : 'hidden'} pt-[72px] pb-28 px-3 max-w-md mx-auto flex flex-col gap-3 w-full`}>
+        {/* LIVE EVENTS BANNER */}
+        <LiveEventsBanner onOpen={setActiveOverlay} telegramId={telegramId} />
+
+        {/* Player meta strip — league + per-hour + per-tap, no point duplication */}
+        <section className="flex items-center justify-between gap-2 bg-slate-900/60 backdrop-blur-sm border-2 border-black rounded-xl px-3 py-2">
+          <div className="flex items-center gap-1.5 text-amber-300">
+            <span className="text-base leading-none">{currentLeague?.icon || '🥉'}</span>
+            <div className="flex flex-col leading-tight">
+              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">League</span>
+              <span className="text-[11px] font-black text-amber-300">{currentLeague?.name || 'Bronze'}</span>
             </div>
           </div>
-          <div className="bg-surface-container border-2 border-black hard-shadow p-3 rounded-xl flex flex-col items-center">
-            <span className="text-[10px] font-black text-outline mb-1 uppercase">Energy</span>
-            <div className="flex items-center gap-1">
-              <span className="material-symbols-outlined text-primary-container text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
-              <span className="text-xl font-black text-primary-container">{isBootstrapping ? '...' : Math.floor(energy)}</span>
-            </div>
+          <div className="flex flex-col items-center leading-tight">
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Per hour</span>
+            <span className="text-[11px] font-black text-cyan-300">+{formatNumber(pointsPerHour)}</span>
           </div>
-          <div className="bg-surface-container border-2 border-black hard-shadow p-3 rounded-xl flex flex-col items-center">
-            <span className="text-[10px] font-black text-outline mb-1 uppercase">Income</span>
-            <div className="bg-tertiary-container text-white px-2 py-0.5 rounded border border-black text-[10px] font-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
-              {isBootstrapping ? '...' : `+${formatNumber(pointsPerHour)}/h`}
-            </div>
+          <div className="flex flex-col items-center leading-tight">
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Crit</span>
+            <span className="text-[11px] font-black text-rose-300">{criticalChance}%</span>
+          </div>
+          <div className="flex flex-col items-end leading-tight">
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Rank</span>
+            <span className="text-[11px] font-black text-emerald-300">{userRank}</span>
           </div>
         </section>
 
-        {/* Central Tapping Mechanic */}
-        <section className="relative flex flex-col items-center justify-center py-12">
-          {/* Energy Bar Overlay */}
-          <div className="absolute -top-4 w-full px-8">
-            <div className="h-6 w-full bg-black rounded-full border-2 border-slate-700 overflow-hidden relative">
-              <div className="h-full bg-primary-container shadow-[0_0_15px_rgba(0,85,255,0.8)] relative transition-all duration-300" style={{ width: `${Math.max(0, Math.min(100, (energy / maxEnergy) * 100))}%` }}>
+        {/* Central Tapping Arena — tap-core flanked by floating SideRails */}
+        <section className="relative flex flex-col items-center justify-center pt-4 pb-2">
+          {/* Energy Bar */}
+          <div className="w-full mb-4">
+            <div className="h-5 w-full bg-black rounded-full border-2 border-slate-700 overflow-hidden relative">
+              <div className="h-full bg-primary-container shadow-[0_0_15px_rgba(0,85,255,0.7)] relative transition-all duration-300" style={{ width: `${Math.max(0, Math.min(100, (energy / maxEnergy) * 100))}%` }}>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent w-1/4 animate-pulse"></div>
               </div>
-              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-white drop-shadow-md">{Math.floor(energy)} / {maxEnergy} MAX</span>
+              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-white drop-shadow-md tracking-wider">⚡ {Math.floor(energy)} / {maxEnergy}</span>
             </div>
           </div>
-          {/* The Tap Core */}
-          <button 
-            className={`group relative active:scale-95 transition-transform duration-75 ${tapCritical ? 'critical' : ''}`}
-            disabled={isBootstrapping}
-            onPointerDown={startTapping}
-            onPointerUp={stopTapping}
-            onPointerLeave={stopTapping}
-            onPointerCancel={stopTapping}
-            onContextMenu={(event) => event.preventDefault()}
-          >
-            <div className="absolute inset-0 rounded-full bg-primary-container/20 blur-3xl animate-pulse"></div>
-            <div id="tap-core-glow" className="w-64 h-64 rounded-full bg-slate-900 border-[6px] border-black p-4 shadow-[0_12px_0_0_rgba(0,0,0,1)] tap-core-glow overflow-hidden flex items-center justify-center relative transition-all duration-75">
-              <div id="tap-core-inner" className="w-full h-full rounded-full bg-gradient-to-br from-primary-container to-blue-900 border-4 border-white/20 flex items-center justify-center relative overflow-hidden transition-colors duration-75">
-                <div className="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,white_10px,white_11px)]"></div>
-                <span id="tap-core-icon" className="material-symbols-outlined text-white text-9xl drop-shadow-2xl transition-all duration-75" style={{ fontVariationSettings: "'FILL' 1" }}>
-                  ads_click
-                </span>
-                <div className="absolute inset-0 border-[12px] border-white/10 rounded-full scale-90"></div>
+
+          {/* Arena container — fixed height, tap-core absolutely centered on true axis */}
+          <div className="relative w-full" style={{ height: '280px' }}>
+            {/* LEFT RAIL — vertically centered on arena axis */}
+            <SideRail
+              side="left"
+              slots={[
+                { id: 'prizes', icon: IconTrophy, label: 'Prizes', accent: 'yellow', onClick: () => setActiveOverlay('prizes'), pulse: true },
+                { id: 'tournaments', icon: IconSwords, label: 'Arena', accent: 'red', onClick: () => setActiveOverlay('tournaments') },
+                { id: 'chests', icon: IconChest, label: 'Crates', accent: 'purple', onClick: () => setActiveOverlay('chests') },
+                { id: 'raffles', icon: IconTicket, label: 'Raffle', accent: 'pink', onClick: () => setActiveOverlay('raffles') },
+                { id: 'autoclicker', icon: IconGear, label: 'AutoTap', accent: 'cyan', onClick: () => setActiveOverlay('autoclicker') },
+              ]}
+            />
+
+            {/* RIGHT RAIL */}
+            <SideRail
+              side="right"
+              slots={[
+                { id: 'follow', icon: IconAntenna, label: 'Follow', accent: 'blue', onClick: () => setActiveOverlay('follow') },
+                { id: 'ads', icon: IconAd, label: 'Ads', accent: 'green', onClick: () => setActiveOverlay('ads') },
+                { id: 'characters', icon: IconMask, label: 'Skins', accent: 'purple', onClick: () => setActiveOverlay('characters') },
+                { id: 'referrals', icon: IconUsers, label: 'Refer', accent: 'yellow', badge: referralCount > 0 ? referralCount : null, onClick: () => setActiveOverlay('referrals') },
+                { id: 'tokens', icon: IconCoin, label: 'Coins', accent: 'orange', onClick: () => setActiveOverlay('tokens') },
+              ]}
+            />
+
+            {/* Tap-core wrapper — absolutely centered on the arena */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
+              <span className="tap-ring" aria-hidden />
+              <span className="tap-ring tap-ring-2" aria-hidden />
+              <span className="tap-ring tap-ring-3" aria-hidden />
+
+              <div className="absolute inset-0 -m-16">
+                <OrbitingDecor showHint={!isBootstrapping && energy > 0 && todayTaps === 0} boostActive={boostActive} />
               </div>
+
+              <button
+                className={`group relative active:scale-95 transition-transform duration-75 ${tapCritical ? 'critical' : ''}`}
+                disabled={isBootstrapping}
+                onPointerDown={startTapping}
+                onPointerUp={stopTapping}
+                onPointerLeave={stopTapping}
+                onPointerCancel={stopTapping}
+                onContextMenu={(event) => event.preventDefault()}
+              >
+                <div className="absolute inset-0 rounded-full bg-primary-container/30 blur-3xl animate-pulse" />
+                <div id="tap-core-glow" className={`w-44 h-44 rounded-full bg-slate-900 border-[5px] border-black p-2.5 shadow-[0_10px_0_0_rgba(0,0,0,1)] tap-core-glow overflow-hidden flex items-center justify-center relative transition-all duration-75 ${boostActive ? 'tap-boost-aura' : ''}`}>
+                  <div id="tap-core-inner" className="w-full h-full rounded-full bg-gradient-to-br from-primary-container to-blue-900 border-4 border-white/20 flex items-center justify-center relative overflow-hidden transition-colors duration-75">
+                    <div className="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,white_10px,white_11px)]" />
+                    <span id="tap-core-icon" className="material-symbols-outlined text-white text-7xl drop-shadow-2xl transition-all duration-75" style={{ fontVariationSettings: "'FILL' 1" }}>
+                      ads_click
+                    </span>
+                    <div className="absolute inset-0 border-[8px] border-white/10 rounded-full scale-90" />
+                  </div>
+                </div>
+              </button>
             </div>
-          </button>
-          <div className="mt-8 text-center">
-            <p className="text-label-sm font-label-sm text-outline uppercase tracking-widest">+{tapValue} COINS / TAP</p>
+          </div>
+
+          {/* Status — centered on the section, not on the arena */}
+          <div className="w-full flex flex-col items-center gap-1 mt-1">
+            <div className="inline-flex items-center gap-2 bg-black/70 border-2 border-emerald-400/60 rounded-full px-3 py-1 shadow-[0_0_15px_rgba(0,255,136,0.35)]">
+              <span className="text-emerald-300 font-black text-xs uppercase tracking-widest">+{tapValue} / TAP</span>
+              {boostActive ? <span className="text-amber-300 font-black text-xs animate-pulse">×{boostMultiplier} BOOST</span> : null}
+            </div>
+            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{tapStatusText}</p>
           </div>
         </section>
 
-        {/* World Events & Daily Quests */}
-        <section className="flex flex-col gap-4">
-          <div className="bg-primary-container border-2 border-black rounded-2xl p-4 hard-shadow relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-2">
-              <span className="bg-black text-secondary-fixed text-[10px] font-black px-2 py-0.5 rounded-full border border-black">LIVE</span>
-            </div>
-            <div className="flex items-start gap-4">
-              <div className="bg-black/20 p-2 rounded-xl border border-white/10">
-                <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1" }}>public</span>
-              </div>
-              <div>
-                <h3 className="text-headline-md font-headline-md text-white">NEON STORM</h3>
-                <p className="text-body-md font-body-md text-blue-100/80">Multiplier increased to 2x for all taps in the next 14m</p>
-              </div>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-surface-container border-2 border-black rounded-2xl p-4 hard-shadow flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <span className="material-symbols-outlined text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>task_alt</span>
-                <span className="text-[10px] font-black text-outline">DAILY</span>
-              </div>
-              <div>
-                <h4 className="text-body-lg font-body-lg text-on-surface">5k Taps</h4>
-                <div className="h-2 w-full bg-black rounded-full mt-2 overflow-hidden">
-                  <div className="h-full bg-tertiary" style={{ width: `${Math.min(100, (todayTaps / 5000) * 100)}%` }}></div>
-                </div>
-              </div>
-            </div>
-            <div className="bg-surface-container border-2 border-black rounded-2xl p-4 hard-shadow flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <span className="material-symbols-outlined text-secondary-fixed" style={{ fontVariationSettings: "'FILL' 1" }}>group</span>
-                <span className="text-[10px] font-black text-outline">SOCIAL</span>
-              </div>
-              <div>
-                <h4 className="text-body-lg font-body-lg text-on-surface">Invite 3</h4>
-                <div className="h-2 w-full bg-black rounded-full mt-2 overflow-hidden">
-                  <div className="h-full bg-secondary-fixed" style={{ width: `${Math.min(100, (referralCount / 3) * 100)}%` }}></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* Bottom progress strip */}
+        <BottomTeaserStrip
+          todayTaps={todayTaps}
+          referralCount={referralCount}
+          boostActive={boostActive}
+          boostMultiplier={boostMultiplier}
+          boostUntil={boostExpires}
+          onOpenReferrals={() => setActiveOverlay('referrals')}
+          onSwitchDaily={() => switchTab('daily')}
+          onOpenAutoclicker={() => setActiveOverlay('autoclicker')}
+        />
       </section>
 
       <section id="section-shop" className={`${activeTab === 'shop' ? 'block' : 'hidden'} max-w-md mx-auto px-6 pt-24 pb-32 space-y-8 w-full`}>
@@ -1827,6 +1877,57 @@ function App() {
           <span className="font-['Plus_Jakarta_Sans'] font-black text-[10px] uppercase mt-1">Profile</span>
         </button>
       </nav>
+
+      {activeOverlay === 'prizes' && (
+        <FeatureOverlay title="Season Prizes" icon="🏆" accent="bg-gradient-to-r from-yellow-600 to-orange-700" onClose={() => setActiveOverlay(null)}>
+          <PrizeLeaderboardPanel telegramId={telegramId} />
+        </FeatureOverlay>
+      )}
+      {activeOverlay === 'tournaments' && (
+        <FeatureOverlay title="Tournaments" icon="⚔️" accent="bg-gradient-to-r from-red-700 to-pink-700" onClose={() => setActiveOverlay(null)}>
+          <TournamentsPanel telegramId={telegramId} onAction={showToast} />
+        </FeatureOverlay>
+      )}
+      {activeOverlay === 'chests' && (
+        <FeatureOverlay title="Loot Chests" icon="📦" accent="bg-gradient-to-r from-purple-700 to-indigo-800" onClose={() => setActiveOverlay(null)}>
+          <ChestsPanel telegramId={telegramId} walletLinked={walletLinked} onAction={showToast} />
+        </FeatureOverlay>
+      )}
+      {activeOverlay === 'raffles' && (
+        <FeatureOverlay title="Raffles" icon="🎟️" accent="bg-gradient-to-r from-pink-600 to-rose-800" onClose={() => setActiveOverlay(null)}>
+          <RafflesPanel telegramId={telegramId} walletLinked={walletLinked} onAction={showToast} />
+        </FeatureOverlay>
+      )}
+      {activeOverlay === 'follow' && (
+        <FeatureOverlay title="Follow Missions" icon="📡" accent="bg-gradient-to-r from-blue-600 to-cyan-700" onClose={() => setActiveOverlay(null)}>
+          <FollowMissionsPanel telegramId={telegramId} onAction={showToast} />
+        </FeatureOverlay>
+      )}
+      {activeOverlay === 'ads' && (
+        <FeatureOverlay title="Watch Ads · Earn" icon="🎬" accent="bg-gradient-to-r from-emerald-600 to-teal-700" onClose={() => setActiveOverlay(null)}>
+          <AdsPanel telegramId={telegramId} onAction={showToast} />
+        </FeatureOverlay>
+      )}
+      {activeOverlay === 'autoclicker' && (
+        <FeatureOverlay title="Auto Clicker" icon="⚙️" accent="bg-gradient-to-r from-slate-700 to-slate-900" onClose={() => setActiveOverlay(null)}>
+          <AutoClickerPanel telegramId={telegramId} walletLinked={walletLinked} onAction={showToast} />
+        </FeatureOverlay>
+      )}
+      {activeOverlay === 'characters' && (
+        <FeatureOverlay title="Character Skins" icon="🎭" accent="bg-gradient-to-r from-fuchsia-700 to-purple-900" onClose={() => setActiveOverlay(null)}>
+          <CharactersPanel telegramId={telegramId} activeCharacterId={activeCharacterId} onSelect={setActiveCharacterId} onAction={showToast} />
+        </FeatureOverlay>
+      )}
+      {activeOverlay === 'referrals' && (
+        <FeatureOverlay title="Referrals & Tiers" icon="👥" accent="bg-gradient-to-r from-amber-600 to-yellow-700" onClose={() => setActiveOverlay(null)}>
+          <ReferralTiersPanel telegramId={telegramId} referralLink={referralLink} onAction={showToast} />
+        </FeatureOverlay>
+      )}
+      {activeOverlay === 'tokens' && (
+        <FeatureOverlay title="Multi-Token Catalog" icon="🪙" accent="bg-gradient-to-r from-yellow-500 to-amber-700" onClose={() => setActiveOverlay(null)}>
+          <TokenPickerPanel />
+        </FeatureOverlay>
+      )}
 
       <div className={`toast ${toast.show ? 'show' : ''}`} id="toast">
         <span className="toast-icon" id="toast-icon">{toast.icon}</span>
