@@ -1,12 +1,83 @@
 # CyberTap Game Monorepo
 
-Monorepo-ul este împărțit clar în două aplicații:DASJDaDAS
+Monorepo-ul conține o aplicație WebApp React și un backend Node.js pentru jocul CyberTap.
 
-- `backend/` - server Node.js cu Express, PostgreSQL și Telegraf
-- `frontend/` - aplicația React + Vite + Tailwind pentru WebApp
-- `frontend/src/index.html` - entrypoint-ul Vite pentru frontend-ul nou
+## Arhitectura logică
 
-## Ce variabile `.env` ai nevoie
+### Frontend
+
+- `frontend/` - React + Vite + Tailwind pentru interfata de joc.
+- `frontend/src/App.jsx` - fluxul principal al jocului: tap, energie, upgrade-uri, leaderboard, wallet, daily reward.
+- `frontend/src/lib/api.js` - clientul API pentru backend.
+- `frontend/src/index.html` - entrypoint-ul folosit de Vite.
+
+### Backend
+
+- `backend/` - server Express cu PostgreSQL și integrare Telegram/Wallet.
+- `backend/src/routes/apiRoutes.js` - rutele HTTP publice.
+- `backend/src/controllers/apiController.js` - stratul de control pentru request-uri.
+- `backend/src/services/gameService.js` - economie de joc: tap, collect, upgrade, daily reward, wheel.
+- `backend/src/services/userService.js` - profil, leaderboard, rank, stare utilizator.
+- `backend/src/services/solanaService.js` - challenge-response pentru wallet, verificare semnături și claim on-chain.
+
+### Flux de încredere Web3
+
+1. Utilizatorul pornește jocul din Telegram WebApp.
+2. Frontend-ul trimite acțiunile de joc către backend prin API.
+3. Backend-ul validează acțiunile și actualizează DB.
+4. Pentru operațiile sensibile, backend-ul cere semnătură de wallet prin challenge nonce.
+5. La claim sau link de wallet, semnătura este verificată server-side înainte de orice efect economic.
+
+Notă: implementarea curentă folosește semnături Solana pentru wallet linking. Dacă adaugi suport EVM, păstrează aceeași limită de încredere și înlocuiește verifier-ul cu un adaptor EIP-712 fără să schimbi contractul API.
+
+## Module funcționale existente
+
+- Tap & Balance
+- Energy management
+- Upgrade shop
+- Daily reward și wheel spin
+- Leaderboard și rank
+- Wallet link și revenue claim
+- Referral flow prin Telegram bot
+
+## Module țintă pentru extindere
+
+Acestea trebuie implementate ca module separate, cu validare server-side și stări persistate în DB sau on-chain, în funcție de risc:
+
+- Leaderboard & Leagues: ranking bazat pe Tap Power și recompense de sezon.
+- Blockchain Rewards: raffle și loot boxes pentru NFT/token drops.
+- Social-to-Earn: follow missions, referral thresholds și reward gating.
+- Monetizare: ads pentru energy refill și multi-token payments pentru skins/boosters.
+- Auto-Clicker: upgrade cu logică off-chain pe server și sync periodic.
+
+## API existent
+
+- `GET /api/health`
+- `GET /api/user/:telegramId`
+- `POST /api/tap`
+- `POST /api/collect`
+- `POST /api/upgrade`
+- `GET /api/leaderboard`
+- `POST /api/daily`
+- `POST /api/wheel_spin`
+- `GET /api/rank/:telegramId`
+- `GET /api/botinfo`
+- `GET /api/wallet/challenge/:telegramId`
+- `GET /api/wallet/status/:telegramId`
+- `POST /api/wallet/verify`
+- `POST /api/wallet/claim`
+
+## Model de date
+
+Tabelele principale sunt:
+
+- `users` - profil, puncte, energie, wallet și revenue.
+- `upgrades` - catalogul de upgrade-uri.
+- `user_upgrades` - nivelul fiecărui upgrade per utilizator.
+- `daily_rewards` - streak și last claim.
+- `wheel_spins` - istoric spin pe zi.
+
+## Variabile `.env`
 
 ### Backend
 
@@ -18,9 +89,11 @@ DATABASE_URL=postgresql://user:password@localhost:5432/cybertap
 DATABASE_URL_PUBLIC=postgresql://user:password@host:5432/cybertap
 PORT=3000
 WEBAPP_URL=https://your-frontend-domain.example
+SOLANA_RPC_URL=https://api.devnet.solana.com
+SOLANA_TREASURY_SECRET_KEY=your_treasury_secret_key
 ```
 
-If your backend `.env` contains the Railway internal Postgres host, that value works only inside Railway. For local migration runs, keep `DATABASE_URL` for deployment and add `DATABASE_URL_PUBLIC` with the public Railway Postgres connection string, then run `cd backend && npm run migrate`.
+`DATABASE_URL_PUBLIC` este util când rulezi migrațiile local împotriva unei baze Railway publice. `WEBAPP_URL` trebuie să fie URL-ul public al frontend-ului construit.
 
 ### Frontend
 
@@ -33,37 +106,34 @@ VITE_APP_NAME=CyberTap
 VITE_DEMO_TELEGRAM_ID=123456789
 ```
 
-`WEBAPP_URL` trebuie să fie URL-ul public unde ai publicat frontend-ul construit, nu linkul către repo și nu localhost. Botul deschide exact adresa asta când apeși butonul Play.
+## Rulare locală
 
-Frontend-ul React folosește entrypoint-ul [frontend/src/index.html](frontend/src/index.html) și se construiește cu Vite în `frontend/dist`.
-
-## Cum rulezi local
-
-1. Copiază fișierele example în `.env` locale și completează valorile.
-2. Instalează dependențele la rădăcina proiectului:
+1. Instalează dependențele din rădăcina proiectului:
 
 ```sh
 npm install
 ```
 
-3. Pornește ambele aplicații:
+2. Rulează migrațiile backend-ului:
+
+```sh
+cd backend
+npm run migrate
+```
+
+3. Pornește aplicațiile:
 
 ```sh
 npm run dev
 ```
 
-4. Dacă vrei să le pornești separat:
+4. Dacă vrei separare pe servicii:
 
 ```sh
 npm run dev:backend
 npm run dev:frontend
 ```
 
-## Structura actuală
-
-- frontend-ul nou este construit ca proiect React/Vite/Tailwind și se ocupă de UI
-- backend-ul rămâne funcțional, dar îl voi reorganiza separat în pașii următori
-
 ## Observație
 
-Dacă ai deja un token real în `backend/.env`, nu-l posta public. În repo păstrează doar placeholder-ele sau un fișier example.
+Nu publica valori reale pentru token, private key sau connection string. În repo păstrează doar placeholder-ele sau un fișier example.

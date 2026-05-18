@@ -65,6 +65,16 @@ export function GiftIcon(props) {
   );
 }
 
+export function AdIcon(props) {
+  return (
+    <IconBase {...props}>
+      <rect x="4.5" y="5" width="15" height="14" rx="2.5" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M10 9.2v5.6l5-2.8-5-2.8Z" fill="currentColor" />
+      <path d="M7 15.5h2M15 15.5h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </IconBase>
+  );
+}
+
 export function DailyIcon(props) {
   return (
     <IconBase {...props}>
